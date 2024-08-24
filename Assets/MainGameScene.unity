@@ -272,7 +272,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: SpawnPoint B
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 713881908405476243, guid: bafff1835c9bb4d1e926d5d0fc6cec04, type: 3}
+    - {fileID: 7260789311641125282, guid: bafff1835c9bb4d1e926d5d0fc6cec04, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -756,7 +758,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: SpawnPoint C
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 713881908405476243, guid: bafff1835c9bb4d1e926d5d0fc6cec04, type: 3}
+    - {fileID: 7260789311641125282, guid: bafff1835c9bb4d1e926d5d0fc6cec04, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1372,7 +1376,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: SpawnPoint D
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 713881908405476243, guid: bafff1835c9bb4d1e926d5d0fc6cec04, type: 3}
+    - {fileID: 7260789311641125282, guid: bafff1835c9bb4d1e926d5d0fc6cec04, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1970,7 +1976,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: SpawnPoint A
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 713881908405476243, guid: bafff1835c9bb4d1e926d5d0fc6cec04, type: 3}
+    - {fileID: 7260789311641125282, guid: bafff1835c9bb4d1e926d5d0fc6cec04, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
