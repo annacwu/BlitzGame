@@ -7,9 +7,11 @@ using Unity.Networking.Transport;
 
 public class PlayerSpawnSystem : MonoBehaviour
 {
-    [SerializeField] private GameObject playerPrefab = null; // MIGHT WANT TO MAKE THIS NETWORK OBJECT NOT GAME OBJECT??
+    [SerializeField] private GameObject playerPrefab = null; 
+
     // create list of spawnPoints player can be put
     private static List<Transform> spawnPoints = new List<Transform>();
+    
     // index to keep track of which spawn point we are on
     private int nextIndex = 0;
 
