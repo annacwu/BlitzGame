@@ -18,14 +18,25 @@ public class PlayerSpawnSystem : MonoBehaviour
     // create two events so this happens when the server starts (listener?)
     private void OnEnable()
     {
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+        {
+            // Register the method immediately if the server is already started
+            OnServerStarted();
+            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        }
+    }
+
+    // separate method so that it does the network manager stuff before it looks for the server
+    public void RegisterSpawnSystemEvents()
+    {
         if (NetworkManager.Singleton != null)
         {
-        NetworkManager.Singleton.OnServerStarted += OnServerStarted;
-        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+            NetworkManager.Singleton.OnServerStarted += OnServerStarted;
+            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         }
         else
         {
-        Debug.LogError("NetworkManager.Singleton is null. Make sure the NetworkManager is present in the scene and initialized before PlayerSpawnSystem.");
+            Debug.LogError("NetworkManager.Singleton is null. Make sure the NetworkManager is properly initialized.");
         }
     }
 
@@ -77,7 +88,7 @@ public class PlayerSpawnSystem : MonoBehaviour
         // the rest is all from an old yt video but this is from the unity docs so this should work
         var playerInstance = Instantiate(playerPrefab, spawnPoints[nextIndex].position, spawnPoints[nextIndex].rotation);
         var playerInstanceNetworkObject = playerInstance.GetComponent<NetworkObject>();
-        playerInstanceNetworkObject.Spawn();
+        playerInstanceNetworkObject.SpawnAsPlayerObject(clientId);
 
         nextIndex++;
     }
