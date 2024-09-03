@@ -11,9 +11,50 @@ public class PlayerSpawnSystem : MonoBehaviour
 
     // create list of spawnPoints player can be put
     private static List<Transform> spawnPoints = new List<Transform>();
-    
+
     // index to keep track of which spawn point we are on
     private int nextIndex = 0;
+
+    // create two events so this happens when the server starts (listener?)
+    private void OnEnable()
+    {
+        if (NetworkManager.Singleton != null)
+        {
+        NetworkManager.Singleton.OnServerStarted += OnServerStarted;
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        }
+        else
+        {
+        Debug.LogError("NetworkManager.Singleton is null. Make sure the NetworkManager is present in the scene and initialized before PlayerSpawnSystem.");
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnServerStarted -= OnServerStarted;
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+        }
+    }
+
+    // when that event occurs, do the player spawn including if host player is spawing
+    private void OnServerStarted()
+    {
+        if (NetworkManager.Singleton.IsHost)
+        {
+            // Spawn the host player
+            SpawnPlayer(NetworkManager.Singleton.LocalClientId);
+        }
+    }
+
+    private void OnClientConnected(ulong clientId)
+    {
+        if (NetworkManager.Singleton.IsServer)
+        {
+            SpawnPlayer(clientId);
+        }
+    }
 
     // spawn system doesn't exist until player joins, so need methods to add and remove it
     public static void AddSpawnPoint(Transform transform)
@@ -24,7 +65,7 @@ public class PlayerSpawnSystem : MonoBehaviour
     public static void RemoveSpawnPoint(Transform transform) => spawnPoints.Remove(transform);
 
     // how to actually spawn the player
-    public void SpawnPlayer(NetworkConnection conn)
+    public void SpawnPlayer(ulong clientId)
     {
         Transform spawnPoint = spawnPoints.ElementAtOrDefault(nextIndex);
 
