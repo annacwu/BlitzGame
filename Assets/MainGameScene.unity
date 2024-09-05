@@ -206,6 +206,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4bed19129eebf64cbb64d7934d1ff2b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cardPrefab: {fileID: 0}
+  selectedColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!4 &373361820
 Transform:
   m_ObjectHideFlags: 0

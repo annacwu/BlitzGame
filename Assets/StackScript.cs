@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-// using Mono.Cecil;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -12,11 +11,11 @@ public class StackScript : MonoBehaviour
     public GameObject cardPrefab;
     //a comment 
 
-    class CardValues {
-        bool destroyed;
-        int value; //number on the card, 2-10
-        string color; //color of the card, determining where it can be placed
-        string face; //the symbol on the back, determining who owns the card, and gets points from it
+    public class CardValues {
+        public bool destroyed;
+        public int value; //number on the card, 2-10
+        public string color; //color of the card, determining where it can be placed
+        public string face; //the symbol on the back, determining who owns the card, and gets points from it
         GameObject inGameObject; //reference to the actual Card object in the scene, so we can do stuff to it later
 
         public CardValues (int v, string c, string f, GameObject g) {
@@ -57,11 +56,11 @@ public class StackScript : MonoBehaviour
         if (selected) {
             //selected = false;
             selected = smanager.selectStack(gameObject);
-            Debug.Log("Stackscript says: " + selected);
+            //Debug.Log("Stackscript says: " + selected);
         } else {
             //selected = true;
             selected = smanager.selectStack(gameObject);
-            Debug.Log("Stackscript says: " + selected);
+            //Debug.Log("Stackscript says: " + selected);
         }
     }
 
@@ -87,6 +86,15 @@ public class StackScript : MonoBehaviour
             cards.RemoveFirst();
         }
         
+    }
+
+    //getter for getting the top card in a stack
+    public CardValues getTopCard() {
+        if (cards.First != null) {
+            return cards.First.Value;
+        } else {
+            return null;
+        }
     }  
 
 
