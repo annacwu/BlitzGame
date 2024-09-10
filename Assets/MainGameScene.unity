@@ -206,7 +206,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4bed19129eebf64cbb64d7934d1ff2b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardPrefab: {fileID: 0}
   selectedColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!4 &373361820
 Transform:
@@ -1636,7 +1635,7 @@ MonoBehaviour:
   NetworkConfig:
     ProtocolVersion: 0
     NetworkTransport: {fileID: 1492114509}
-    PlayerPrefab: {fileID: 7474896340404332634, guid: fbcf3af815c434f4b832bd0250069cfb, type: 3}
+    PlayerPrefab: {fileID: 0}
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 1da4c13ec192b58429be3001fe78d10b, type: 2}

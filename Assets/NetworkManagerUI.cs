@@ -13,14 +13,19 @@ public class NetworkManagerUI : MonoBehaviour
     [SerializeField] private PlayerSpawnSystem playerSpawnSystem;
 
     private void Awake(){
+
         serverButton.onClick.AddListener(() => {
             NetworkManager.Singleton.StartServer();
             playerSpawnSystem.RegisterSpawnSystemEvents();
         });
+
         hostButton.onClick.AddListener(() => {
             NetworkManager.Singleton.StartHost();
+            Debug.Log("Host started manually"); // it was never starting without the following line
+            playerSpawnSystem.OnServerStarted();
             playerSpawnSystem.RegisterSpawnSystemEvents();
         });
+
         clientButton.onClick.AddListener(() => {
             NetworkManager.Singleton.StartClient();
         });
