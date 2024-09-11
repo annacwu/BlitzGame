@@ -35,7 +35,8 @@ public class PlayerSpawnSystem : MonoBehaviour
         if (NetworkManager.Singleton != null)
         {
             Debug.Log("Registering spawn system events");
-            NetworkManager.Singleton.OnServerStarted += OnServerStarted;
+            // so something is wrong with the line below this it doesn't actually acll that function idk why
+            // NetworkManager.Singleton.OnServerStarted += OnServerStarted;
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         }
         else
@@ -48,7 +49,7 @@ public class PlayerSpawnSystem : MonoBehaviour
     {
         if (NetworkManager.Singleton != null)
         {
-            NetworkManager.Singleton.OnServerStarted -= OnServerStarted;
+            NetworkManager.Singleton.OnServerStarted -= OnServerStarted; // also this might not work then if the other one didnt
             NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
         }
     }
@@ -94,12 +95,21 @@ public class PlayerSpawnSystem : MonoBehaviour
             return;
         }
 
-        Debug.Log($"Spawning player {clientId} at spawn point {nextIndex} at position {spawnPoint.position}");
+        Debug.Log($"Spawning player {clientId} at spawn point {nextIndex} at position {spawnPoint.position} and rotation {spawnPoint.rotation}");
 
         // the rest is all from an old yt video but this is from the unity docs so this should work
         var playerInstance = Instantiate(playerPrefab, spawnPoints[nextIndex].position, spawnPoints[nextIndex].rotation);
         var playerInstanceNetworkObject = playerInstance.GetComponent<NetworkObject>();
         playerInstanceNetworkObject.SpawnAsPlayerObject(clientId);
+
+        // rotate camera based on set spawn point rotation
+        Camera playerCamera = playerInstance.GetComponentInChildren<Camera>();
+        if (playerCamera != null)
+        {
+            Debug.Log($"setting player camera to {spawnPoint.rotation}");
+            playerCamera.transform.rotation = spawnPoint.rotation;
+            Debug.Log($"camera now set to {playerCamera.transform.rotation}");
+        }
 
         nextIndex++;
     }

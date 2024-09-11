@@ -503,10 +503,10 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 948742125}
-  - {fileID: 1226508251}
   - {fileID: 938251259}
   - {fileID: 1527725393}
+  - {fileID: 1226508251}
+  - {fileID: 948742125}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &928925906
@@ -590,7 +590,7 @@ GameObject:
   - component: {fileID: 938251261}
   - component: {fileID: 938251260}
   m_Layer: 0
-  m_Name: SP3
+  m_Name: SP2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -605,7 +605,7 @@ Transform:
   m_GameObject: {fileID: 938251258}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: -20.1, y: 44.8, z: -0.34555846}
+  m_LocalPosition: {x: -20, y: 45, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -687,7 +687,7 @@ GameObject:
   - component: {fileID: 948742127}
   - component: {fileID: 948742126}
   m_Layer: 0
-  m_Name: SP1
+  m_Name: SP4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -702,7 +702,7 @@ Transform:
   m_GameObject: {fileID: 948742124}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -86.9, y: -1.3, z: -0.34555846}
+  m_LocalPosition: {x: -90, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1226,7 +1226,7 @@ GameObject:
   - component: {fileID: 1226508253}
   - component: {fileID: 1226508252}
   m_Layer: 0
-  m_Name: SP2
+  m_Name: SP3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1241,7 +1241,7 @@ Transform:
   m_GameObject: {fileID: 1226508250}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -1, w: 0}
-  m_LocalPosition: {x: 42.199997, y: 0, z: -0.34555846}
+  m_LocalPosition: {x: 45, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1711,7 +1711,7 @@ GameObject:
   - component: {fileID: 1527725395}
   - component: {fileID: 1527725394}
   m_Layer: 0
-  m_Name: SP4
+  m_Name: SP1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1726,7 +1726,7 @@ Transform:
   m_GameObject: {fileID: 1527725392}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: -19.1, y: -46.7, z: -0.34555846}
+  m_LocalPosition: {x: -20, y: -45, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
