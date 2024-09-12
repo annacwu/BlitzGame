@@ -20,6 +20,7 @@ public class StackManagerScript : MonoBehaviour
     private GameObject currentStack; //the stack currently selected
 
     [SerializeField] private Color selectedColor;
+    [SerializeField] private GameObject deckPrefab;
 
 
     // Start is called before the first frame update
@@ -86,4 +87,28 @@ public class StackManagerScript : MonoBehaviour
         }
         return false;
     }
+
+    //spawns cards in a configuration for the start of the game
+    public void startGame(/*GameObject[] players, int numPlayers*/ /*takes in players / position of players maybe?*/) {
+        //1. spawns a deck, containing all dutch blitz cards per player
+        //  a. a deck consists of 40 cards, 4 of each number (1-10) in each of the 4 colors (red, blue, yellow (?), green)
+        GameObject newDeck = Instantiate(deckPrefab, new Vector3(0, 0, 0), new Quaternion(0, 0, 0, 0)); //this is a template position - ideally, we'd use the position + rotation of the player
+        createFullDeck(newDeck, "template face"); //also template for now :)
+
+        //2. calls function to shuffle the deck
+        //3. doles out cards to correct stacks
+        //4. repeat for each player
+    }
+
+    //adds cards to stack to make it a deck
+    private void createFullDeck (GameObject deck, string face) {
+        Color[] colors = {Color.blue, Color.green, Color.yellow, Color.red};
+        StackScript currentDeckScript = deck.GetComponent<StackScript>();
+
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 4; j++) {
+                currentDeckScript.addCard(i + 1, colors[j], face);
+            }
+        }
+    } 
 }
