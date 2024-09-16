@@ -8,6 +8,7 @@ using Unity.Networking.Transport;
 public class PlayerSpawnSystem : MonoBehaviour
 {
     [SerializeField] private GameObject playerPrefab = null; 
+    [SerializeField] private GameObject tableObject = null;
 
     // create list of spawnPoints player can be put
     private static List<Transform> spawnPoints = new List<Transform>();
@@ -102,15 +103,19 @@ public class PlayerSpawnSystem : MonoBehaviour
         var playerInstanceNetworkObject = playerInstance.GetComponent<NetworkObject>();
         playerInstanceNetworkObject.SpawnAsPlayerObject(clientId);
 
-        // rotate camera based on set spawn point rotation
-        Camera playerCamera = playerInstance.GetComponentInChildren<Camera>();
-        if (playerCamera != null)
-        {
-            Debug.Log($"setting player camera to {spawnPoint.rotation}");
-            playerCamera.transform.rotation = spawnPoint.rotation;
-            Debug.Log($"camera now set to {playerCamera.transform.rotation}");
-        }
+        RotateTableTowardPlayer(spawnPoint);
 
         nextIndex++;
+    }
+
+    // moved this here to just do this here
+    private void RotateTableTowardPlayer(Transform playerTransform)
+    {
+        // Get the direction from the table to the player
+        Vector3 directionToPlayer = playerTransform.position - tableObject.transform.position;
+        
+        // Calculate the angle and apply the rotation
+        float angle = Mathf.Atan2(directionToPlayer.y, directionToPlayer.x) * Mathf.Rad2Deg;
+        tableObject.transform.rotation = Quaternion.Euler(0, 0, angle); // offset problem might be here
     }
 }
