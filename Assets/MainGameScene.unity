@@ -208,7 +208,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selectedColor: {r: 0, g: 0, b: 0, a: 0}
-  deckPrefab: {fileID: 5234375499342486173, guid: 8d2e5d02f166e1c4dba26f8400141498, type: 3}
+  deckPrefab: {fileID: 5234375499342486173, guid: d5c17ecc704686e4f81d13d4a41727ee, type: 3}
+  numDecksTEMP: 2
 --- !u!4 &373361820
 Transform:
   m_ObjectHideFlags: 0
@@ -2215,8 +2216,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c0f9ef122195479489b732d69fb3112, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTransform: {fileID: 0}
-  tableTransform: {fileID: 0}
 --- !u!212 &1882467341
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2469,7 +2468,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerPrefab: {fileID: 7474896340404332634, guid: fbcf3af815c434f4b832bd0250069cfb, type: 3}
-  tableObject: {fileID: 775214802}
+  tableObject: {fileID: 0}
 --- !u!4 &3471192689173851396
 Transform:
   m_ObjectHideFlags: 0

@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering.RenderGraphModule;
@@ -14,6 +16,8 @@ public class StackScript : MonoBehaviour
     [SerializeField] private bool isStackOfOne; //Stacks of one can only contain one card at a time (e.g. the set of 3 cards in front of the player)
     private bool canAcceptCards; //decks and the stack of 10 cards cannot accept any cards. This variable will be set when a stack is created. 
     //a comment 
+
+    private int numCards = 0; //counts # of cards in the linked list
 
     public class CardValues {
         public bool destroyed;
@@ -79,6 +83,11 @@ public class StackScript : MonoBehaviour
         newCard.transform.position += cardPos; //i don't know if this is the best way to do this
         cards.AddFirst(new CardValues(value, color, face, newCard));
         newCard.GetComponent<CardScript>().setCard(cards.First.Value);
+        numCards++;
+
+        //trying to get UI to render properly by setting order in layer to 2 above each card below
+        newCard.GetComponent<SpriteRenderer>().sortingOrder = numCards*2;
+        newCard.GetComponentInChildren<Canvas>().sortingOrder = (numCards * 2) + 1;
     }
 
     //take top card, put it somewhere else?
@@ -89,6 +98,7 @@ public class StackScript : MonoBehaviour
             CardValues topCard = cards.First.Value;
             topCard.destroyObject();
             cards.RemoveFirst();
+            numCards--;
         }
         
     }
@@ -104,8 +114,76 @@ public class StackScript : MonoBehaviour
 
 
     //shuffle deck pershlaps
+    //currently very unoptomized i think but might not matter since shuffling isn't something that happens during important gameplay
+    // shuffles order of linked list, then calls reload to reset visual representation of cards.
     public void shuffle () {
+        LinkedListNode<CardValues> firstCard;
+        Debug.Log("Shuffle Called");
 
+        for (int i = 0; i < numCards; i++) {
+            //get swap stuff
+            firstCard = getIthNode(i);
+            int swap = UnityEngine.Random.Range(i, numCards); //random card to swap with
+            LinkedListNode<CardValues> toSwap = getIthNode(swap);
+            
+            //swap
+            if (i + 1 == swap) {
+                //cards.Remove(firstCard); 
+                cards.Remove(toSwap);
+                cards.AddBefore(firstCard, toSwap);  
+                //cards.AddAfter(firstCard, firstCard);    
+            } else if (i < swap) {
+                LinkedListNode<CardValues> beforeSwap = toSwap.Previous;
+                LinkedListNode<CardValues> afterFirst = firstCard.Next;
+
+                cards.Remove(firstCard); 
+                cards.Remove(toSwap);
+                cards.AddBefore(afterFirst, toSwap);  
+                cards.AddAfter(beforeSwap, firstCard);    
+            }
+        }
+
+        reload();
+    }
+
+    //helper function, gets and returns i'th element in the linked list
+    private LinkedListNode<CardValues> getIthNode (int n) {
+        
+        LinkedListNode<CardValues> currentNode = cards.First;
+        for (int i = 0; i < n; i++) {
+            currentNode = currentNode.Next;
+        }
+        return currentNode;
+    }
+
+    //helper function, resets all cards (removes them all, then spawns them all in in order)
+    private void reload() {
+        Debug.Log("Reload Called");
+
+        CardValues[] destroyedCards = new CardValues[numCards];
+
+        //destroy all card gameObjects
+        for (int i = 0; i < numCards; i++) {
+            CardValues topCard = cards.First.Value;
+            destroyedCards[i] = new CardValues(topCard.value, topCard.color, topCard.face, null);
+            topCard.destroyObject();
+            cards.RemoveFirst();
+            //numCards--;
+        }
+
+        //load all card gameObjects back into the scene
+        for (int i = 0; i < numCards; i++) {
+            GameObject newCard = Instantiate(cardPrefab, transform.position, transform.rotation); //might want to instantiate in relation to stack, if we decide stacks can move around, rather than worldspace
+            Vector3 cardPos = new Vector3(0, 0, -1); //remember to change this at some point
+            newCard.transform.position += cardPos; //i don't know if this is the best way to do this
+            cards.AddFirst(new CardValues(destroyedCards[i].value, destroyedCards[i].color, destroyedCards[i].face, newCard));
+            newCard.GetComponent<CardScript>().setCard(cards.First.Value);
+            
+            //trying to get UI to render properly
+            newCard.GetComponent<SpriteRenderer>().sortingOrder = i*2;
+            newCard.GetComponentInChildren<Canvas>().sortingOrder = (i * 2) + 1;
+           
+        }
     }
 
 

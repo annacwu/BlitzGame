@@ -8,7 +8,8 @@ using UnityEngine.UI;
 public class CardScript : MonoBehaviour
 {
     
-    [SerializeField] private TMP_Text valueText;
+    [SerializeField] private TMP_Text topValueText;
+    [SerializeField] private TMP_Text bottomValueText;
     [SerializeField] private GameObject thisGameObject;
     private SpriteRenderer thisRenderer;
 
@@ -35,7 +36,8 @@ public class CardScript : MonoBehaviour
     public void setCard (StackScript.CardValues card) {
         thisRenderer = thisGameObject.GetComponent<SpriteRenderer>();
         thisCard = card;
-        valueText.text = "Value: " + thisCard.value;
+        topValueText.text = thisCard.value.ToString();
+        bottomValueText.text = thisCard.value.ToString();
         thisRenderer.color = thisCard.color;
     }
 

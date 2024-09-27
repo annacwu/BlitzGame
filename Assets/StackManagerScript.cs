@@ -22,6 +22,8 @@ public class StackManagerScript : MonoBehaviour
     [SerializeField] private Color selectedColor;
     [SerializeField] private GameObject deckPrefab;
 
+    [SerializeField] private int numDecksTEMP;
+
 
     // Start is called before the first frame update
     //void Start()
@@ -41,6 +43,7 @@ public class StackManagerScript : MonoBehaviour
     //returns stackSelected so that the stack knows whether it is selected or not
     //TO ADD: 
     //get color working (I have no clue why it is not)
+    //TRANSFERRING CARDS DOES NOT WORK ATM
     public bool selectStack (GameObject selectedStack) {
         if (!stackSelected) {
             stackSelected = true;
@@ -92,8 +95,15 @@ public class StackManagerScript : MonoBehaviour
     public void startGame(/*GameObject[] players, int numPlayers*/ /*takes in players / position of players maybe?*/) {
         //1. spawns a deck, containing all dutch blitz cards per player
         //  a. a deck consists of 40 cards, 4 of each number (1-10) in each of the 4 colors (red, blue, yellow (?), green)
-        GameObject newDeck = Instantiate(deckPrefab, new Vector3(0, 0, 0), new Quaternion(0, 0, 0, 0)); //this is a template position - ideally, we'd use the position + rotation of the player
-        createFullDeck(newDeck, "template face"); //also template for now :)
+
+
+        for (int i = 0; i < numDecksTEMP; i++) {
+            GameObject newDeck = Instantiate(deckPrefab, new Vector3(0, i*20, 0), new Quaternion(0, 0, 0, 0)); //this is a template position - ideally, we'd use the position + rotation of the player
+            createFullDeck(newDeck, "template face"); //also template for now :)
+            newDeck.GetComponent<StackScript>().shuffle();
+        }
+
+        
 
         //2. calls function to shuffle the deck
         //3. doles out cards to correct stacks
