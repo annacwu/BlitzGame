@@ -209,7 +209,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selectedColor: {r: 0, g: 0, b: 0, a: 0}
   deckPrefab: {fileID: 5234375499342486173, guid: d5c17ecc704686e4f81d13d4a41727ee, type: 3}
-  numDecksTEMP: 2
+  numDecksTEMP: 0
 --- !u!4 &373361820
 Transform:
   m_ObjectHideFlags: 0
@@ -486,6 +486,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 775214803}
+  - component: {fileID: 775214804}
   m_Layer: 0
   m_Name: TableObject
   m_TagString: Untagged
@@ -510,6 +511,27 @@ Transform:
   - {fileID: 1882467339}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &775214804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 775214802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 2279553380
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!1 &791222962
 GameObject:
   m_ObjectHideFlags: 0
@@ -2181,7 +2203,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1882467339}
   - component: {fileID: 1882467341}
-  - component: {fileID: 1882467340}
   m_Layer: 0
   m_Name: Square
   m_TagString: Untagged
@@ -2204,18 +2225,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 775214803}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1882467340
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1882467338}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c0f9ef122195479489b732d69fb3112, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!212 &1882467341
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2468,7 +2477,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerPrefab: {fileID: 7474896340404332634, guid: fbcf3af815c434f4b832bd0250069cfb, type: 3}
-  tableObject: {fileID: 0}
+  tableObject: {fileID: 775214802}
 --- !u!4 &3471192689173851396
 Transform:
   m_ObjectHideFlags: 0

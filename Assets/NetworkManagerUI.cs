@@ -27,7 +27,7 @@ public class NetworkManagerUI : MonoBehaviour
         });
 
         clientButton.onClick.AddListener(() => {
-            NetworkManager.Singleton.StartClient(); // something i don't understand is why client stuff works
+            NetworkManager.Singleton.StartClient(); // something i don't understand is why client stuff works SEEMS LIKE IT DOESNT ACTUALLY
         });
     }
 }
