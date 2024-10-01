@@ -4,15 +4,6 @@ using UnityEngine;
 
 public class PlayerScript : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    // custom variable to check how to rotate the table for the player to see
+    public int positionNumber;
 }

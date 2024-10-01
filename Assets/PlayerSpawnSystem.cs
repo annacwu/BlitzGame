@@ -103,14 +103,21 @@ public class PlayerSpawnSystem : MonoBehaviour
         var playerInstanceNetworkObject = playerInstance.GetComponent<NetworkObject>();
         playerInstanceNetworkObject.SpawnAsPlayerObject(clientId);
 
-        Debug.Log($"Current LocalClientId: {NetworkManager.Singleton.LocalClientId}");
+        var playerInfo = playerInstance.GetComponent<PlayerScript>();
+        playerInfo.positionNumber = nextIndex; // assign position based on which spawn point they got
+
+        Debug.Log($"Player position number saved as {nextIndex}");
+
+        RotateTableForPosition(playerInfo.positionNumber);
+
+        // Debug.Log($"Current LocalClientId: {NetworkManager.Singleton.LocalClientId}");
 
         
-        Debug.Log($"Local Client Id: {NetworkManager.Singleton.LocalClientId}, client Id: {clientId}");
-        if (NetworkManager.Singleton.LocalClientId == clientId) {
-            Debug.Log($"Attempting to rotate table for client {clientId}");
-            RotateTableTowardPlayer(spawnPoints[nextIndex].position, clientId);
-        }
+        // Debug.Log($"Local Client Id: {NetworkManager.Singleton.LocalClientId}, client Id: {clientId}");
+        // if (NetworkManager.Singleton.LocalClientId == clientId) {
+        //     Debug.Log($"Attempting to rotate table for client {clientId}");
+        //     RotateTableTowardPlayer(spawnPoints[nextIndex].position, clientId);
+        // }
 
         nextIndex++;
     }
@@ -139,14 +146,26 @@ public class PlayerSpawnSystem : MonoBehaviour
     // }
 
 
-    // old rotate method before clientrpc implemented
-    [ClientRpc]
-    private void RotateTableTowardPlayer(Vector3 playerPosition, ulong clientId)
-    {
-        Debug.Log($"RotateTableTowardPlayerClientRpc called for client {clientId}");
-        if (NetworkManager.Singleton.LocalClientId != clientId) {
-            return;
-        }
+    // // old rotate method before clientrpc implemented
+    // [ClientRpc]
+    // private void RotateTableTowardPlayer(Vector3 playerPosition, ulong clientId)
+    // {
+    //     Debug.Log($"RotateTableTowardPlayerClientRpc called for client {clientId}");
+    //     if (NetworkManager.Singleton.LocalClientId != clientId) {
+    //         return;
+    //     }
+    //     // Get the direction from the table to the player
+    //     Vector3 directionToPlayer = playerPosition - tableObject.transform.position;
+        
+    //     // Calculate the angle and apply the rotation
+    //     float angle = Mathf.Atan2(directionToPlayer.y, directionToPlayer.x) * Mathf.Rad2Deg;
+    //     tableObject.transform.rotation = Quaternion.Euler(0, 0, angle); // offset problem might be here
+
+    //     Debug.Log($"Table rotated at angle {angle}");
+    // }
+
+    private void RotateTableTowardPlayer(Vector3 playerPosition) {
+        
         // Get the direction from the table to the player
         Vector3 directionToPlayer = playerPosition - tableObject.transform.position;
         
@@ -155,5 +174,11 @@ public class PlayerSpawnSystem : MonoBehaviour
         tableObject.transform.rotation = Quaternion.Euler(0, 0, angle); // offset problem might be here
 
         Debug.Log($"Table rotated at angle {angle}");
+    }
+
+     private void RotateTableForPosition(int playerInfo){
+        Vector3 playerPosition = spawnPoints[playerInfo].position; 
+        Debug.Log($"Rotating table for player at {playerInfo} to position {playerPosition}");
+        RotateTableTowardPlayer(playerPosition);
     }
 }
