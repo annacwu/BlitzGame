@@ -209,7 +209,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selectedColor: {r: 0, g: 0, b: 0, a: 0}
   deckPrefab: {fileID: 5234375499342486173, guid: d5c17ecc704686e4f81d13d4a41727ee, type: 3}
-  numDecksTEMP: 0
+  stackPrefab: {fileID: 5234375499342486173, guid: c1f7fe6136df84c48be47dfa6e947a7b, type: 3}
+  numDecksTEMP: 1
 --- !u!4 &373361820
 Transform:
   m_ObjectHideFlags: 0

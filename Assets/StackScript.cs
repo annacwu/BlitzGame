@@ -36,7 +36,7 @@ public class StackScript : MonoBehaviour
 
         public void destroyObject(){
             Destroy(inGameObject);
-            Debug.Log("Object Destroyed");
+            //Debug.Log("Object Destroyed");
         }
     }
 
@@ -118,7 +118,7 @@ public class StackScript : MonoBehaviour
     // shuffles order of linked list, then calls reload to reset visual representation of cards.
     public void shuffle () {
         LinkedListNode<CardValues> firstCard;
-        Debug.Log("Shuffle Called");
+        //Debug.Log("Shuffle Called");
 
         for (int i = 0; i < numCards; i++) {
             //get swap stuff
@@ -158,7 +158,7 @@ public class StackScript : MonoBehaviour
 
     //helper function, resets all cards (removes them all, then spawns them all in in order)
     private void reload() {
-        Debug.Log("Reload Called");
+        //Debug.Log("Reload Called");
 
         CardValues[] destroyedCards = new CardValues[numCards];
 

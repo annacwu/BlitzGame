@@ -17,10 +17,11 @@ public class StackManagerScript : MonoBehaviour
 {
 
     private bool stackSelected = false;
-    private GameObject currentStack; //the stack currently selected
+    private GameObject currentStack;
 
     [SerializeField] private Color selectedColor;
     [SerializeField] private GameObject deckPrefab;
+    [SerializeField] private GameObject stackPrefab;
 
     [SerializeField] private int numDecksTEMP;
 
@@ -41,22 +42,33 @@ public class StackManagerScript : MonoBehaviour
     //handles selecting a stack - if already have a stack selected, then either deselects or replaces.
     //currently the only way to know what stack is selected is to look at the console :)
     //returns stackSelected so that the stack knows whether it is selected or not
-    //TO ADD: 
-    //get color working (I have no clue why it is not)
-    //TRANSFERRING CARDS DOES NOT WORK ATM
+
+    //TO ADD
+    //1) make it so that decks cannot transfer cards
+    //2) add code for taking 3 cards at a time from a player's deck
+    //3) add code for putting 1's in the middle to create new decks
+    //4) update for networks at some point
+    
     public bool selectStack (GameObject selectedStack) {
         if (!stackSelected) {
             stackSelected = true;
             currentStack = selectedStack;
             selectedStack.GetComponent<SpriteRenderer>().color = selectedColor; //sets color of selected stack to whatever the color is
-            //Debug.Log("Selected Stack: " + currentStack.name);
+
+            if (selectedStack.GetComponent<StackScript>().getTopCard().value == 1) {
+                //should set up logic to place card in the middle, here maybe?
+                //this might be the wrong place for this code. 
+            }
+
             return stackSelected;
+
         } else if (stackSelected && currentStack == selectedStack) {
+
             stackSelected = false;
             currentStack = null;
             selectedStack.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1); //resets color of deselected stack to white
-            //Debug.Log("Selected Stack: NONE");
             return stackSelected;
+
         } else if (stackSelected && currentStack != selectedStack) { //should handle transferring cards
             
             //should handle deciding if one can transfer cards.
@@ -71,20 +83,19 @@ public class StackManagerScript : MonoBehaviour
                 newTopCard = selectedStack.GetComponent<StackScript>().getTopCard();
             }
             
-            //currentTopCard = currentStack.GetComponent<StackScript>().getTopCard();
-            //newTopCard = selectedStack.GetComponent<StackScript>().getTopCard();
 
-            if (currentTopCard != null && newTopCard != null && currentTopCard.value + 1 == newTopCard.value && currentTopCard.color == newTopCard.color) {
+            if (currentTopCard != null && newTopCard != null && currentTopCard.value - 1 == newTopCard.value && currentTopCard.color == newTopCard.color) {
                 //transfer
+                //Debug.Log("Trying to Transfer!!");
                 selectedStack.GetComponent<StackScript>().addCard(currentTopCard.value, currentTopCard.color, currentTopCard.face); //add new card to selected stack
                 currentStack.GetComponent<StackScript>().removeTopCard(); //remove card from old stack
-                Debug.Log("Card Transferred");
+                //Debug.Log("Card Transferred");
             } else {
                 //do not transfer
                 currentStack.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1);
                 currentStack = selectedStack;
                 selectedStack.GetComponent<SpriteRenderer>().color = selectedColor;
-                Debug.Log("You may not tranfer this card");
+                //Debug.Log("You may not tranfer this card");
                 return stackSelected;
             }
         }
@@ -98,9 +109,34 @@ public class StackManagerScript : MonoBehaviour
 
 
         for (int i = 0; i < numDecksTEMP; i++) {
+            //computes where decks should go (TEMP)
+            Vector3 location = new Vector3(0, i*20, 0);
+            Quaternion rotation = new Quaternion(0, 0, 0, 0);
+
+            //spawns decks
             GameObject newDeck = Instantiate(deckPrefab, new Vector3(0, i*20, 0), new Quaternion(0, 0, 0, 0)); //this is a template position - ideally, we'd use the position + rotation of the player
             createFullDeck(newDeck, "template face"); //also template for now :)
             newDeck.GetComponent<StackScript>().shuffle();
+
+            //sets up game
+
+            //sets up the stack of 10
+            location.x -= 20;
+            GameObject stackOf10 = Instantiate(stackPrefab, location, new Quaternion(0, 0, 0, 0));
+            for (int j = 0; j < 10; j++) {
+                StackScript.CardValues topCard = newDeck.GetComponent<StackScript>().getTopCard();
+                stackOf10.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face);
+                newDeck.GetComponent<StackScript>().removeTopCard();
+            }
+
+            //sets up the three other stacks
+            for (int j = 0; j < 3; j++) {
+                location.x -= 20;
+                GameObject newStack = Instantiate(stackPrefab, location, new Quaternion(0, 0, 0, 0));
+                StackScript.CardValues topCard = newDeck.GetComponent<StackScript>().getTopCard();
+                newStack.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face);
+                newDeck.GetComponent<StackScript>().removeTopCard();
+            }
         }
 
         
