@@ -6,11 +6,23 @@ using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 
-public class TestLobby : MonoBehaviour
+public class LobbyManager : MonoBehaviour
 {
+    public static LobbyManager Instance { get; private set; }
+
+    public event System.EventHandler<OnLobbyListChangedEventArgs> OnLobbyListChanged;
+    public class OnLobbyListChangedEventArgs : System.EventArgs {
+        public List<Lobby> lobbyList;
+    }
 
     private Lobby hostLobby ;
     private float heartbeatTimer;
+
+
+    private void Awake() {
+        Instance = this;
+    }
+
 
     private async void Start() {
         await UnityServices.InitializeAsync();
@@ -79,6 +91,34 @@ public class TestLobby : MonoBehaviour
     //         Debug.Log(e);
     //     }
     // }
+
+    public async void RefreshLobbyList() {
+        try {
+            QueryLobbiesOptions options = new QueryLobbiesOptions();
+            options.Count = 25;
+
+            // filter for open lobbies only
+            options.Filters = new List<QueryFilter> {
+                new QueryFilter(
+                    field: QueryFilter.FieldOptions.AvailableSlots,
+                    op: QueryFilter.OpOptions.GT,
+                    value: "0")
+            };
+
+            // order by newest
+            options.Order = new List<QueryOrder> {
+                new QueryOrder(
+                    asc: false,
+                    field: QueryOrder.FieldOptions.Created)
+            };
+
+            QueryResponse lobbyListQueryResponse = await Lobbies.Instance.QueryLobbiesAsync();
+
+            OnLobbyListChanged?.Invoke(this, new OnLobbyListChangedEventArgs { lobbyList = lobbyListQueryResponse.Results });
+        } catch (LobbyServiceException e) {
+            Debug.Log(e);
+        }
+    }
 
     private async void JoinLobbyByCode(string lobbyCode) {
         try {
