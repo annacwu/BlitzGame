@@ -78,7 +78,7 @@ public class StackScript : MonoBehaviour
 
     //add card
     public void addCard (int value, Color color, string face) {
-        GameObject newCard = Instantiate(cardPrefab, transform.position, transform.rotation); //might want to instantiate in relation to stack, if we decide stacks can move around, rather than worldspace
+        GameObject newCard = Instantiate(cardPrefab, transform.position, transform.rotation, transform); //might want to instantiate in relation to stack, if we decide stacks can move around, rather than worldspace
         Vector3 cardPos = new Vector3(0, 0, -1);
         newCard.transform.position += cardPos; //i don't know if this is the best way to do this
         cards.AddFirst(new CardValues(value, color, face, newCard));
@@ -173,7 +173,7 @@ public class StackScript : MonoBehaviour
 
         //load all card gameObjects back into the scene
         for (int i = 0; i < numCards; i++) {
-            GameObject newCard = Instantiate(cardPrefab, transform.position, transform.rotation); //might want to instantiate in relation to stack, if we decide stacks can move around, rather than worldspace
+            GameObject newCard = Instantiate(cardPrefab, transform.position, transform.rotation, transform); //might want to instantiate in relation to stack, if we decide stacks can move around, rather than worldspace
             Vector3 cardPos = new Vector3(0, 0, -1); //remember to change this at some point
             newCard.transform.position += cardPos; //i don't know if this is the best way to do this
             cards.AddFirst(new CardValues(destroyedCards[i].value, destroyedCards[i].color, destroyedCards[i].face, newCard));
@@ -184,6 +184,11 @@ public class StackScript : MonoBehaviour
             newCard.GetComponentInChildren<Canvas>().sortingOrder = (i * 2) + 1;
            
         }
+    }
+
+    //getter for isDeck
+    public bool checkIfDeck () {
+        return isDeck;
     }
 
 

@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO.Compression;
+using Unity.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -22,6 +24,8 @@ public class StackManagerScript : MonoBehaviour
     [SerializeField] private Color selectedColor;
     [SerializeField] private GameObject deckPrefab;
     [SerializeField] private GameObject stackPrefab;
+    [SerializeField] private GameObject spawnSystem;
+    [SerializeField] private GameObject table;
 
     [SerializeField] private int numDecksTEMP;
 
@@ -44,10 +48,10 @@ public class StackManagerScript : MonoBehaviour
     //returns stackSelected so that the stack knows whether it is selected or not
 
     //TO ADD
-    //1) make it so that decks cannot transfer cards
-    //2) add code for taking 3 cards at a time from a player's deck
-    //3) add code for putting 1's in the middle to create new decks
-    //4) update for networks at some point
+    //1) make it so that decks cannot transfer cards                [x]
+    //2) add code for taking 3 cards at a time from a player's deck [ ]
+    //3) add code for putting 1's in the middle to create new decks [ ]
+    //4) update for networks at some point                          [ ]
     
     public bool selectStack (GameObject selectedStack) {
         if (!stackSelected) {
@@ -71,6 +75,11 @@ public class StackManagerScript : MonoBehaviour
 
         } else if (stackSelected && currentStack != selectedStack) { //should handle transferring cards
             
+            //checks to make sure neither stack is a deck
+            if (currentStack.GetComponent<StackScript>().checkIfDeck() || selectedStack.GetComponent<StackScript>().checkIfDeck()) {
+                return false;
+            }
+
             //should handle deciding if one can transfer cards.
             //if tranfer is possible: transfer, but do not change selection. 
             //if not possible: do not transfer, change selection to new stack. 
@@ -110,19 +119,28 @@ public class StackManagerScript : MonoBehaviour
 
         for (int i = 0; i < numDecksTEMP; i++) {
             //computes where decks should go (TEMP)
-            Vector3 location = new Vector3(0, i*20, 0);
-            Quaternion rotation = new Quaternion(0, 0, 0, 0);
+            //Vector3 location = spawnSystem.transform.GetChild(i).transform.position;
+            Vector3 zeroPos = new Vector3(40, -45, 0); //position of spawnpoint 1
+
+            Quaternion rotation = spawnSystem.transform.GetChild(i).transform.rotation;
+            Quaternion zeroRot = new Quaternion(0, 0, 0, 0);
+
+            //rotates table to try and get it to work :3
+            //Debug.Log(spawnSystem.transform.GetChild(i).name + "'s starting rotation: " + rotation.z);
+            table.transform.rotation = rotation;
+            table.transform.Rotate(0.0f, 0.0f, -90.0f);
+            //table.transform.position = zeroPos;
 
             //spawns decks
-            GameObject newDeck = Instantiate(deckPrefab, new Vector3(0, i*20, 0), new Quaternion(0, 0, 0, 0)); //this is a template position - ideally, we'd use the position + rotation of the player
+            GameObject newDeck = Instantiate(deckPrefab, zeroPos, zeroRot, table.transform); //this is a template position - ideally, we'd use the position + rotation of the player
             createFullDeck(newDeck, "template face"); //also template for now :)
             newDeck.GetComponent<StackScript>().shuffle();
 
             //sets up game
 
             //sets up the stack of 10
-            location.x -= 20;
-            GameObject stackOf10 = Instantiate(stackPrefab, location, new Quaternion(0, 0, 0, 0));
+            zeroPos.x -= 20;
+            GameObject stackOf10 = Instantiate(stackPrefab, zeroPos, zeroRot, table.transform);
             for (int j = 0; j < 10; j++) {
                 StackScript.CardValues topCard = newDeck.GetComponent<StackScript>().getTopCard();
                 stackOf10.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face);
@@ -131,12 +149,15 @@ public class StackManagerScript : MonoBehaviour
 
             //sets up the three other stacks
             for (int j = 0; j < 3; j++) {
-                location.x -= 20;
-                GameObject newStack = Instantiate(stackPrefab, location, new Quaternion(0, 0, 0, 0));
+                zeroPos.x -= 20;
+                GameObject newStack = Instantiate(stackPrefab, zeroPos, zeroRot, table.transform);
                 StackScript.CardValues topCard = newDeck.GetComponent<StackScript>().getTopCard();
                 newStack.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face);
                 newDeck.GetComponent<StackScript>().removeTopCard();
             }
+
+            //rotates back
+            table.transform.rotation = zeroRot;
         }
 
         
