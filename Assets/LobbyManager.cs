@@ -53,9 +53,8 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
-    private async void CreateLobby() {
+    public async void CreateLobby(string lobbyName) {
         try {
-            string lobbyName = "MyLobby";
             int maxPlayers = 4;
             Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers);
 

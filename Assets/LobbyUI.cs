@@ -19,6 +19,7 @@ public class LobbyUI : MonoBehaviour
     private void Awake() {
         Instance = this;
         refreshButton.onClick.AddListener(RefreshButtonClick);
+        createLobbyButton.onClick.AddListener(CreateButtonClick);
     }
 
     private void Start() {
@@ -27,6 +28,11 @@ public class LobbyUI : MonoBehaviour
 
     private void RefreshButtonClick() {
         LobbyManager.Instance.RefreshLobbyList();
+    }
+
+    private void CreateButtonClick() {
+        Debug.Log("Create button clicked. tryping to show instance.");
+        LobbyCreateUI.Instance.Show();
     }
 
     // add event
