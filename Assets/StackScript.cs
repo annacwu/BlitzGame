@@ -86,8 +86,8 @@ public class StackScript : MonoBehaviour
         numCards++;
 
         //trying to get UI to render properly by setting order in layer to 2 above each card below
-        newCard.GetComponent<SpriteRenderer>().sortingOrder = numCards*2;
-        newCard.GetComponentInChildren<Canvas>().sortingOrder = (numCards * 2) + 1;
+        newCard.GetComponent<SpriteRenderer>().sortingOrder = numCards*2 + 1;
+        newCard.GetComponentInChildren<Canvas>().sortingOrder = (numCards * 2) + 2;
     }
 
     //take top card, put it somewhere else?

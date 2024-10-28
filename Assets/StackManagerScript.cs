@@ -177,5 +177,13 @@ public class StackManagerScript : MonoBehaviour
                 currentDeckScript.addCard(i + 1, colors[j], face);
             }
         }
-    } 
+    }
+
+    public bool isAStackSelected() {
+        return stackSelected;
+    }
+
+    public GameObject returnCurrentSelection () {
+        return currentStack;
+    }
 }
