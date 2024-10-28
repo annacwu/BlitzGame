@@ -8,7 +8,7 @@ public class LobbyCreateUI : MonoBehaviour
 {
     public static LobbyCreateUI Instance { get; private set; }
 
-    [SerializeField] private GameObject createLobbyPanel; // The panel to show
+    [SerializeField] private GameObject createLobbyPanel; 
     [SerializeField] private TMP_InputField lobbyNameInput;
     [SerializeField] private Button createLobbyConfirmButton;
     [SerializeField] private Button cancelButton;
@@ -29,14 +29,14 @@ public class LobbyCreateUI : MonoBehaviour
     }
 
     private void OnCreateLobbyConfirm() {
-        // Validate inputs (you could add further validation)
+
         string lobbyName = lobbyNameInput.text;
         if (string.IsNullOrEmpty(lobbyName)) {
             Debug.Log("Lobby name cannot be empty");
             return;
         }
 
-        // Call the LobbyManager to create a lobby
+        // Call the LobbyManager to create a lobby had to make that one public
         LobbyManager.Instance.CreateLobby(lobbyName);
 
         // Hide the panel after creating the lobby

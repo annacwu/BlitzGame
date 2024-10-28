@@ -10,6 +10,7 @@ public class LobbyManager : MonoBehaviour
 {
     public static LobbyManager Instance { get; private set; }
 
+    // i just learned what making an event was so this is that i think
     public event System.EventHandler<OnLobbyListChangedEventArgs> OnLobbyListChanged;
     public class OnLobbyListChangedEventArgs : System.EventArgs {
         public List<Lobby> lobbyList;

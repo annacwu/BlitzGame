@@ -35,7 +35,7 @@ public class LobbyUI : MonoBehaviour
         LobbyCreateUI.Instance.Show();
     }
 
-    // add event
+
     private void LobbyManager_OnLobbyListChanged(object sender, LobbyManager.OnLobbyListChangedEventArgs e) {
         UpdateLobbyList(e.lobbyList);
     }
