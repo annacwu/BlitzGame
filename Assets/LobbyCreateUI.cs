@@ -10,6 +10,7 @@ public class LobbyCreateUI : MonoBehaviour
 
     [SerializeField] private GameObject createLobbyPanel; 
     [SerializeField] private TMP_InputField lobbyNameInput;
+    [SerializeField] private TMP_Dropdown numPlayersInput;
     [SerializeField] private Button createLobbyConfirmButton;
     [SerializeField] private Button cancelButton;
 
@@ -28,7 +29,12 @@ public class LobbyCreateUI : MonoBehaviour
         createLobbyPanel.SetActive(false); // Hide the panel
     }
 
-    private void OnCreateLobbyConfirm() {
+    // this is a wrapper so that the functionality of the method is public, but the logic remains internal (something about encapsulation??)
+    // this method might be too simple to warrant that but here we are
+    public void OnCreateLobbyConfirm() {
+        OnCreateLobbyConfirm_Internal();
+    }
+    private void OnCreateLobbyConfirm_Internal() {
 
         string lobbyName = lobbyNameInput.text;
         if (string.IsNullOrEmpty(lobbyName)) {
@@ -36,8 +42,9 @@ public class LobbyCreateUI : MonoBehaviour
             return;
         }
 
+        int numPlayers = int.Parse(numPlayersInput.options[numPlayersInput.value].text);
         // Call the LobbyManager to create a lobby had to make that one public
-        LobbyManager.Instance.CreateLobby(lobbyName);
+        LobbyManager.Instance.CreateLobby(lobbyName, numPlayers);
 
         // Hide the panel after creating the lobby
         Hide();
