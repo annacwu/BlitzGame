@@ -82,16 +82,6 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
-    // private async void JoinLobby() {
-    //     try {
-    //         QueryResponse queryResponse = await Lobbies.Instance.QueryLobbiesAsync();
-    //         // currently joins first one it finds
-    //         await Lobbies.Instance.JoinLobbyByIdAsync(queryResponse.Results[0].Id);
-    //     } catch (LobbyServiceException e) {
-    //         Debug.Log(e);
-    //     }
-    // }
-
     public async void RefreshLobbyList() {
         try {
             QueryLobbiesOptions options = new QueryLobbiesOptions();
@@ -117,6 +107,28 @@ public class LobbyManager : MonoBehaviour
             OnLobbyListChanged?.Invoke(this, new OnLobbyListChangedEventArgs { lobbyList = lobbyListQueryResponse.Results });
         } catch (LobbyServiceException e) {
             Debug.Log(e);
+        }
+    }
+
+     // private async void JoinLobby() {
+    //     try {
+    //         QueryResponse queryResponse = await Lobbies.Instance.QueryLobbiesAsync();
+    //         // currently joins first one it finds
+    //         await Lobbies.Instance.JoinLobbyByIdAsync(queryResponse.Results[0].Id);
+    //     } catch (LobbyServiceException e) {
+    //         Debug.Log(e);
+    //     }
+    // }
+
+    // THIS IS THE ONE WE'RE USING
+    public async void JoinLobby(string lobbyId) {
+        try {
+            await Lobbies.Instance.JoinLobbyByIdAsync(lobbyId);
+            Debug.Log("Joined lobby with ID: " + lobbyId);
+        
+            // FIXME: ativate the panel here
+        } catch (LobbyServiceException e) {
+         Debug.LogError("Failed to join lobby: " + e);
         }
     }
 

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.NetworkInformation;
+using TMPro;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
@@ -36,6 +37,7 @@ public class LobbyUI : MonoBehaviour
     }
 
 
+    // these define the events for when the refresh button is pushed
     private void LobbyManager_OnLobbyListChanged(object sender, LobbyManager.OnLobbyListChangedEventArgs e) {
         UpdateLobbyList(e.lobbyList);
     }
@@ -50,8 +52,7 @@ public class LobbyUI : MonoBehaviour
         // Dynamically create UI elements for each lobby in the list
         foreach (Lobby lobby in lobbyList) {
             GameObject lobbyEntry = Instantiate(lobbyEntryPrefab, lobbyListContainer.transform);
-            lobbyEntry.GetComponentInChildren<Text>().text = $"{lobby.Name} ({lobby.MaxPlayers} players)";
-            // FIXME: double check this i think things might need to be initialized differently
+            lobbyEntry.GetComponentInChildren<TextMeshProUGUI>().text = $"{lobby.Name} ({lobby.MaxPlayers} players)";
         }
     }
 }
