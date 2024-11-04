@@ -59,10 +59,10 @@ public class StackManagerScript : MonoBehaviour
             currentStack = selectedStack;
             selectedStack.GetComponent<SpriteRenderer>().color = selectedColor; //sets color of selected stack to whatever the color is
 
-            if (selectedStack.GetComponent<StackScript>().getTopCard().value == 1) {
+            /*if (selectedStack.GetComponent<StackScript>().getTopCard().value == 1) {
                 //should set up logic to place card in the middle, here maybe?
                 //this might be the wrong place for this code. 
-            }
+            }*/
 
             return stackSelected;
 
@@ -185,5 +185,9 @@ public class StackManagerScript : MonoBehaviour
 
     public GameObject returnCurrentSelection () {
         return currentStack;
+    }
+
+    public void deselectStack () {
+        stackSelected = false;
     }
 }
