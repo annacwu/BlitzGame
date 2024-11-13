@@ -8,9 +8,6 @@ public class TableScript : MonoBehaviour
 
     [SerializeField] private GameObject StackManager;
     [SerializeField] private GameObject stackPrefab;
-    
-
-    //yes the table needs a script.
 
     //should check to see if one can create a new stack in the middle
     void OnMouseDown() {
@@ -28,11 +25,14 @@ public class TableScript : MonoBehaviour
 
         if (topCard == null) 
         {
+            //Debug.Log("Stack has no cards");
             return;
         }
 
         //if value is 1, then we can create a new stack
         if (topCard.value == 1) {
+            
+            
             if (Mouse.current == null){
                 Debug.LogWarning("Mouse input not recognized. Ensure the Input System is set up correctly.");
                 return;
@@ -44,7 +44,7 @@ public class TableScript : MonoBehaviour
             Vector2 mouseRealLoc = Camera.main.ScreenToWorldPoint(mouseScreenLoc);
             //mouseRealLoc.z = 0;
 
-            Debug.Log("X: " + mouseRealLoc.x + "Y:" + mouseRealLoc.y);
+            //Debug.Log("Placed new card at X = " + mouseRealLoc.x + " and Y =" + mouseRealLoc.y);
 
             GameObject newStack = Instantiate(stackPrefab, mouseRealLoc, transform.rotation, transform);
 
@@ -52,9 +52,11 @@ public class TableScript : MonoBehaviour
             currentStack.GetComponent<StackScript>().removeTopCard();
 
             managerScript.deselectStack(); //ensures we deselect the stack we got the card from - otherwise leads to errors
+        } else {
+            //Debug.Log("Top Card Value = " + topCard.value);
         }
         
         
-        //Debug.Log("Cools");
+        //Debug.Log("Function Complete");
     }
 }

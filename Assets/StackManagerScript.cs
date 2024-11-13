@@ -48,21 +48,15 @@ public class StackManagerScript : MonoBehaviour
     //returns stackSelected so that the stack knows whether it is selected or not
 
     //TO ADD
-    //1) make it so that decks cannot transfer cards                [x]
-    //2) add code for taking 3 cards at a time from a player's deck [ ]
-    //3) add code for putting 1's in the middle to create new decks [ ]
-    //4) update for networks at some point                          [ ]
+    //1) add code for taking 3 cards at a time from a player's deck [ ]
+    //2) add code for putting 1's in the middle to create new decks [X]
+    //3) update for networks at some point                          [ ]
     
     public bool selectStack (GameObject selectedStack) {
         if (!stackSelected) {
             stackSelected = true;
             currentStack = selectedStack;
             selectedStack.GetComponent<SpriteRenderer>().color = selectedColor; //sets color of selected stack to whatever the color is
-
-            /*if (selectedStack.GetComponent<StackScript>().getTopCard().value == 1) {
-                //should set up logic to place card in the middle, here maybe?
-                //this might be the wrong place for this code. 
-            }*/
 
             return stackSelected;
 
@@ -74,11 +68,6 @@ public class StackManagerScript : MonoBehaviour
             return stackSelected;
 
         } else if (stackSelected && currentStack != selectedStack) { //should handle transferring cards
-            
-            //checks to make sure neither stack is a deck
-            if (currentStack.GetComponent<StackScript>().checkIfDeck() || selectedStack.GetComponent<StackScript>().checkIfDeck()) {
-                return false;
-            }
 
             //should handle deciding if one can transfer cards.
             //if tranfer is possible: transfer, but do not change selection. 

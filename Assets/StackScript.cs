@@ -61,33 +61,27 @@ public class StackScript : MonoBehaviour
 
     //calls selectStack in the stackmanager.
     public void selectThisStack () {
-        if (selected) {
-            //selected = false;
-            selected = smanager.selectStack(gameObject);
-            //Debug.Log("Stackscript says: " + selected);
-        } else {
-            //selected = true;
-            selected = smanager.selectStack(gameObject);
-            //Debug.Log("Stackscript says: " + selected);
-        }
+        //Debug.Log("Trying to select a stack - StackScript");
+        selected = smanager.selectStack(gameObject);
     }
 
     public void addBlankCard() {
         addCard(0, new Color(1, 1, 1, 1), null);
+        numCards++;
     }
 
     //add card
     public void addCard (int value, Color color, string face) {
         GameObject newCard = Instantiate(cardPrefab, transform.position, transform.rotation, transform); //might want to instantiate in relation to stack, if we decide stacks can move around, rather than worldspace
-        Vector3 cardPos = new Vector3(0, 0, -1);
-        newCard.transform.position += cardPos; //i don't know if this is the best way to do this
+
         cards.AddFirst(new CardValues(value, color, face, newCard));
         newCard.GetComponent<CardScript>().setCard(cards.First.Value);
-        numCards++;
 
         //trying to get UI to render properly by setting order in layer to 2 above each card below
         newCard.GetComponent<SpriteRenderer>().sortingOrder = numCards*2 + 1;
         newCard.GetComponentInChildren<Canvas>().sortingOrder = (numCards * 2) + 2;
+
+        numCards++;
     }
 
     //take top card, put it somewhere else?
@@ -158,7 +152,6 @@ public class StackScript : MonoBehaviour
 
     //helper function, resets all cards (removes them all, then spawns them all in in order)
     private void reload() {
-        //Debug.Log("Reload Called");
 
         CardValues[] destroyedCards = new CardValues[numCards];
 
@@ -168,20 +161,17 @@ public class StackScript : MonoBehaviour
             destroyedCards[i] = new CardValues(topCard.value, topCard.color, topCard.face, null);
             topCard.destroyObject();
             cards.RemoveFirst();
-            //numCards--;
         }
 
         //load all card gameObjects back into the scene
         for (int i = 0; i < numCards; i++) {
             GameObject newCard = Instantiate(cardPrefab, transform.position, transform.rotation, transform); //might want to instantiate in relation to stack, if we decide stacks can move around, rather than worldspace
-            Vector3 cardPos = new Vector3(0, 0, -1); //remember to change this at some point
-            newCard.transform.position += cardPos; //i don't know if this is the best way to do this
             cards.AddFirst(new CardValues(destroyedCards[i].value, destroyedCards[i].color, destroyedCards[i].face, newCard));
             newCard.GetComponent<CardScript>().setCard(cards.First.Value);
             
             //trying to get UI to render properly
-            newCard.GetComponent<SpriteRenderer>().sortingOrder = i*2;
-            newCard.GetComponentInChildren<Canvas>().sortingOrder = (i * 2) + 1;
+            newCard.GetComponent<SpriteRenderer>().sortingOrder = i*2 + 1;
+            newCard.GetComponentInChildren<Canvas>().sortingOrder = (i * 2) + 2;
            
         }
     }
