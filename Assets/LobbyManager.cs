@@ -62,6 +62,10 @@ public class LobbyManager : MonoBehaviour
             hostLobby = lobby;
             Debug.Log("Created Lobby! " + lobby.Name + " " + lobby.MaxPlayers);
             PrintPlayers(hostLobby);
+
+            // Immediately switch to the joined lobby screen since the player is already in this lobby
+            JoinedLobbyUI.Instance.Show(lobby.Id, lobby.Name);
+
         } catch (LobbyServiceException e) {
             Debug.Log(e);
         }

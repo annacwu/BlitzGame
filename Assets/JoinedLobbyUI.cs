@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Services.Lobbies.Models;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,6 +10,7 @@ public class JoinedLobbyUI : MonoBehaviour
 {
     public static JoinedLobbyUI Instance { get; private set; } // REMINDER: look into this line bc what
     [SerializeField] private TMP_Text lobbyName; 
+    [SerializeField] private TMP_Text lobbyID;
     [SerializeField] private Button startButton;
     [SerializeField] private Button leaveButton;
     [SerializeField] private GameObject playerListPrefab;
@@ -25,8 +27,10 @@ public class JoinedLobbyUI : MonoBehaviour
         // leaveButton.onClick.AddListener(Hide);
     }
 
-    public void Show() {
+    public void Show(string lobId, string lobName) {
         joinedLobbyPanel.SetActive(true); // Show the panel
+        lobbyName.text = lobName; 
+        lobbyID.text = lobId;
     }
 
     public void Hide() {
