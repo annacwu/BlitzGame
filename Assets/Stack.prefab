@@ -443,8 +443,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 36.6, y: 18.75}
-  m_SizeDelta: {x: 20, y: 7.5}
+  m_AnchoredPosition: {x: 41.98, y: 6.3959985}
+  m_SizeDelta: {x: 31.161, y: 11.685}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4163165866720312354
 CanvasRenderer:
@@ -576,8 +576,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 36.6, y: 26.25}
-  m_SizeDelta: {x: 20, y: 7.5}
+  m_AnchoredPosition: {x: 41.98, y: 18.081}
+  m_SizeDelta: {x: 31.161, y: 11.685}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &144645121779676366
 CanvasRenderer:
@@ -738,7 +738,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Add Card
+  m_text: Flip Deck
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -876,9 +876,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a47e9cbdf1c71ac419e2f5457e05f42d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  faceUpSprite: {fileID: 21300000, guid: e5a64dcbedf84994ab1eb813ad5eb3a5, type: 3}
+  faceDownSprite: {fileID: 21300000, guid: 5fb92f810a1258d4193496f9302a5125, type: 3}
   cardPrefab: {fileID: 3581826042978022473, guid: 20d7c59dc61d64eaf910ba569a3e8279, type: 3}
   isDeck: 0
-  isStackOfOne: 0
+  canTransfer: 1
 --- !u!61 &848449197279142982
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -989,7 +991,7 @@ GameObject:
   - component: {fileID: 2621439136983940226}
   - component: {fileID: 3472752863230746071}
   m_Layer: 5
-  m_Name: AddCard
+  m_Name: FlipDeck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1012,8 +1014,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 36.6, y: 33.75}
-  m_SizeDelta: {x: 20, y: 7.5}
+  m_AnchoredPosition: {x: 42.292, y: 30}
+  m_SizeDelta: {x: 31.161, y: 11.685}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &9141126535689431838
 CanvasRenderer:
@@ -1099,7 +1101,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 4320838099911510877}
         m_TargetAssemblyTypeName: StackScript, Assembly-CSharp
-        m_MethodName: addBlankCard
+        m_MethodName: faceOtherWay
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

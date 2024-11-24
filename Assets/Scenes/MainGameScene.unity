@@ -208,7 +208,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selectedColor: {r: 0, g: 0, b: 0, a: 0}
-  deckPrefab: {fileID: 5234375499342486173, guid: d5c17ecc704686e4f81d13d4a41727ee, type: 3}
   stackPrefab: {fileID: 5234375499342486173, guid: c1f7fe6136df84c48be47dfa6e947a7b, type: 3}
   spawnSystem: {fileID: 832053210}
   table: {fileID: 1919200038}
@@ -987,7 +986,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 160
+  field of view: 165
   orthographic: 0
   orthographic size: 5
   m_Depth: 0

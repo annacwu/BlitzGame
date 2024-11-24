@@ -22,7 +22,7 @@ public class StackManagerScript : MonoBehaviour
     private GameObject currentStack;
 
     [SerializeField] private Color selectedColor;
-    [SerializeField] private GameObject deckPrefab;
+    //[SerializeField] private GameObject deckPrefab; //got rid of deckPrefab bc it was literally the same as stack
     [SerializeField] private GameObject stackPrefab;
     [SerializeField] private GameObject spawnSystem;
     [SerializeField] private GameObject table;
@@ -47,12 +47,13 @@ public class StackManagerScript : MonoBehaviour
     //currently the only way to know what stack is selected is to look at the console :)
     //returns stackSelected so that the stack knows whether it is selected or not
 
-    //TO ADD
+    //TO DO
     //1) add code for taking 3 cards at a time from a player's deck [ ]
     //2) add code for putting 1's in the middle to create new decks [X]
     //3) update for networks at some point                          [ ]
     
     public bool selectStack (GameObject selectedStack) {
+        //if no stack is selected, selected stack that was clicked on
         if (!stackSelected) {
             stackSelected = true;
             currentStack = selectedStack;
@@ -73,16 +74,24 @@ public class StackManagerScript : MonoBehaviour
             //if tranfer is possible: transfer, but do not change selection. 
             //if not possible: do not transfer, change selection to new stack. 
 
+
             StackScript.CardValues currentTopCard = null;
             StackScript.CardValues newTopCard = null;
-
+            
+            //normal card transferring
             if (currentStack.GetComponent<StackScript>().getTopCard() != null && selectedStack.GetComponent<StackScript>().getTopCard() != null) {
                 currentTopCard = currentStack.GetComponent<StackScript>().getTopCard();
                 newTopCard = selectedStack.GetComponent<StackScript>().getTopCard();
             }
+
+            //trasnferring 3 at a time (we are implementing this as a button i decided)
+            /*
+            if (currentTopCard != null && newTopCard != null && currentStack.GetComponent<StackScript>().isDeck == true && selectedStack.GetComponent<StackScript>().isAcceptorPile == true) {
+                transferThree();
+            }*/
             
 
-            if (currentTopCard != null && newTopCard != null && currentTopCard.value - 1 == newTopCard.value && currentTopCard.color == newTopCard.color) {
+            if (currentTopCard != null && newTopCard != null && currentTopCard.value - 1 == newTopCard.value && currentTopCard.color == newTopCard.color && currentStack.GetComponent<StackScript>().canTransfer == true) {
                 //transfer
                 //Debug.Log("Trying to Transfer!!");
                 selectedStack.GetComponent<StackScript>().addCard(currentTopCard.value, currentTopCard.color, currentTopCard.face); //add new card to selected stack
@@ -109,7 +118,7 @@ public class StackManagerScript : MonoBehaviour
         for (int i = 0; i < numDecksTEMP; i++) {
             //computes where decks should go (TEMP)
             //Vector3 location = spawnSystem.transform.GetChild(i).transform.position;
-            Vector3 zeroPos = new Vector3(40, -45, 0); //position of spawnpoint 1
+            Vector3 zeroPos = new Vector3(0, -45, 0); //position of spawnpoint 1
 
             Quaternion rotation = spawnSystem.transform.GetChild(i).transform.rotation;
             Quaternion zeroRot = new Quaternion(0, 0, 0, 0);
@@ -120,16 +129,34 @@ public class StackManagerScript : MonoBehaviour
             table.transform.Rotate(0.0f, 0.0f, -90.0f);
             //table.transform.position = zeroPos;
 
+            Vector3 deckPos = zeroPos; //position where we should spawn the deck (below the other cards, slightly left so u can flip cards to the right)
+            deckPos.x -= 10; //horizontal offset
+            deckPos.y -= 20; //vertical offset
+            Vector3 firstCardPos = zeroPos; //position where we should spawn the deck of 10 cards
+            firstCardPos.x += 30;
+
             //spawns decks
-            GameObject newDeck = Instantiate(deckPrefab, zeroPos, zeroRot, table.transform); //this is a template position - ideally, we'd use the position + rotation of the player
+            GameObject newDeck = Instantiate(stackPrefab, deckPos, zeroRot, table.transform); //this is a template position - ideally, we'd use the position + rotation of the player
             createFullDeck(newDeck, "template face"); //also template for now :)
             newDeck.GetComponent<StackScript>().shuffle();
+            newDeck.GetComponent<StackScript>().isDeck = true;
+            newDeck.GetComponent<StackScript>().canTransfer = true;
+            newDeck.GetComponent<StackScript>().faceOtherWay();
+
+
+            //instantiates acceptor pile
+            deckPos.x += 20;
+            GameObject newAcceptorPile = Instantiate(stackPrefab, deckPos, zeroRot, table.transform);
+            newAcceptorPile.GetComponent<StackScript>().isAcceptorPile = true;
+            newAcceptorPile.GetComponent<StackScript>().canTransfer = true;
+
+            //add button to newDeck that handles transferring 3
 
             //sets up game
 
             //sets up the stack of 10
-            zeroPos.x -= 20;
-            GameObject stackOf10 = Instantiate(stackPrefab, zeroPos, zeroRot, table.transform);
+            //zeroPos.x -= 20;
+            GameObject stackOf10 = Instantiate(stackPrefab, firstCardPos, zeroRot, table.transform);
             for (int j = 0; j < 10; j++) {
                 StackScript.CardValues topCard = newDeck.GetComponent<StackScript>().getTopCard();
                 stackOf10.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face);
@@ -138,8 +165,8 @@ public class StackManagerScript : MonoBehaviour
 
             //sets up the three other stacks
             for (int j = 0; j < 3; j++) {
-                zeroPos.x -= 20;
-                GameObject newStack = Instantiate(stackPrefab, zeroPos, zeroRot, table.transform);
+                firstCardPos.x -= 20;
+                GameObject newStack = Instantiate(stackPrefab, firstCardPos, zeroRot, table.transform);
                 StackScript.CardValues topCard = newDeck.GetComponent<StackScript>().getTopCard();
                 newStack.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face);
                 newDeck.GetComponent<StackScript>().removeTopCard();
@@ -156,7 +183,7 @@ public class StackManagerScript : MonoBehaviour
         //4. repeat for each player
     }
 
-    //adds cards to stack to make it a deck
+    //adds 1 card of each color / value combo to make a full deck. since faces aren't implemented yet that's mostly just a placeholder. 
     private void createFullDeck (GameObject deck, string face) {
         Color[] colors = {Color.blue, Color.green, Color.yellow, Color.red};
         StackScript currentDeckScript = deck.GetComponent<StackScript>();
@@ -168,15 +195,28 @@ public class StackManagerScript : MonoBehaviour
         }
     }
 
+    //returns bool, if true a stack is currently selected. 
     public bool isAStackSelected() {
         return stackSelected;
     }
 
+    //returns currently selected stack
     public GameObject returnCurrentSelection () {
         return currentStack;
     }
 
+    //resets selection so that no stack is currently selected
     public void deselectStack () {
         stackSelected = false;
+    }
+
+    //transfer 3 cards from the deck to the acceptor pile. if there are no cards left, transfer back to deck from acceptor. 
+    private void transferThree (GameObject deck, GameObject acceptor) {
+        
+    }
+
+    //put all cards in the acceptor pile back in the right order in the deck
+    public void resetAcceptor() {
+
     }
 }

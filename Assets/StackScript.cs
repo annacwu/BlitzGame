@@ -9,11 +9,16 @@ using UnityEngine.Experimental.Rendering.RenderGraphModule;
 public class StackScript : MonoBehaviour
 {   
 
+    [SerializeField] private Sprite faceUpSprite;
+    [SerializeField] private Sprite faceDownSprite;
+    private bool isFacingUp = true;
+    public bool isAcceptorPile = false; //acceptor pile denotes the stack that accepts 3 cards at a time from the deck
+
     private bool selected = false; //determines whether the stack has been clicked once (e.g to move a card)
     private StackManagerScript smanager;
     public GameObject cardPrefab;
-    [SerializeField] private bool isDeck; //decks start with a full deck of cards, which is shuffled automatically. Decks are spawned in when the game starts, & handle the whole doling out cards thing.
-    [SerializeField] private bool isStackOfOne; //Stacks of one can only contain one card at a time (e.g. the set of 3 cards in front of the player)
+    [SerializeField] public bool isDeck = false; //decks start with a full deck of cards, which is shuffled automatically. Decks are spawned in when the game starts, & handle the whole doling out cards thing.
+    [SerializeField] public bool canTransfer = true; //you cannot transfer from the main deck, or from stacks placed in the middle. 
     private bool canAcceptCards; //decks and the stack of 10 cards cannot accept any cards. This variable will be set when a stack is created. 
     //a comment 
 
@@ -179,6 +184,46 @@ public class StackScript : MonoBehaviour
     //getter for isDeck
     public bool checkIfDeck () {
         return isDeck;
+    }
+
+    public void faceOtherWay () {
+        SpriteRenderer stackRenderer = gameObject.GetComponent<SpriteRenderer>();
+
+        //handles changing visuals so you can / can't see cards. 
+        //eventually, flipped sprite should show face of cards flipped
+        //not actually hard to do but im focusing on smth else today
+        if (isFacingUp) { 
+            isFacingUp = false;
+            canTransfer = false; //facedown decks should not be able to transfer cards. 
+            stackRenderer.sprite = faceDownSprite;
+            stackRenderer.sortingOrder = 100;
+        } else {
+            isFacingUp = true;
+            canTransfer = true;
+            stackRenderer.sprite = faceUpSprite;
+            stackRenderer.sortingOrder = 0;
+        }
+
+        LinkedListNode<CardValues> currentNode = cards.First;
+        CardValues[] newOrdering = new CardValues[numCards];
+
+        //creates new ordering
+        for (int i = 0; i < numCards; i++) {
+            newOrdering[i] = currentNode.Value;
+            currentNode = currentNode.Next;
+        }
+
+        //reset cards
+        cards = new LinkedList<CardValues>();
+        for (int i = 0; i < numCards; i++) {
+            cards.AddLast(newOrdering[i]);
+        }
+
+        //reload deck so order is right
+        reload();
+
+        Debug.Log("Reordered Cards! (deck is now facing the other way)");
+
     }
 
 

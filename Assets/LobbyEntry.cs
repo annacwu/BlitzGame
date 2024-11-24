@@ -10,6 +10,8 @@ public class LobbyEntry : MonoBehaviour
     private string lobbyId;
     private string lobbyName;
 
+    // this is prob the issue with the joining and it now showing anything here. 
+    // this is never referenced so its never getting the id
     public void Setup(Lobby lobby) {
         lobbyId = lobby.Id;
         lobbyName = lobby.Name;

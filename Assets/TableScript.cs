@@ -23,9 +23,9 @@ public class TableScript : MonoBehaviour
         GameObject currentStack = managerScript.returnCurrentSelection();
         StackScript.CardValues topCard = currentStack.GetComponent<StackScript>().getTopCard();
 
-        if (topCard == null) 
+        if (topCard == null || currentStack.GetComponent<StackScript>().canTransfer == false) 
         {
-            //Debug.Log("Stack has no cards");
+            //Debug.Log("Stack has no cards or you may not transfer from this type of stack.");
             return;
         }
 
