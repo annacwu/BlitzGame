@@ -159,4 +159,14 @@ public class LobbyManager : MonoBehaviour
             Debug.Log(player.Id);
         }
     }
+
+    public async void LeaveLobby(){
+        try {
+            string playerId = AuthenticationService.Instance.PlayerId;
+            await LobbyService.Instance.RemovePlayerAsync("lobbyId", playerId);
+        }
+        catch (LobbyServiceException e) {
+            Debug.Log(e);
+        }
+    }
 }

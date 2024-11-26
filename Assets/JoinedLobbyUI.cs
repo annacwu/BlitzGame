@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Services.Authentication;
+using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -23,8 +25,8 @@ public class JoinedLobbyUI : MonoBehaviour
         }
         Instance = this;
         joinedLobbyPanel.SetActive(false);
+        leaveButton.onClick.AddListener(LeaveButtonClicked);
         // startButton.onClick.AddListener(StartGame);
-        // leaveButton.onClick.AddListener(Hide);
     }
 
     public void Show(string lobId, string lobName) {
@@ -35,6 +37,11 @@ public class JoinedLobbyUI : MonoBehaviour
 
     public void Hide() {
         joinedLobbyPanel.SetActive(false); // Hide the panel
+    }
+
+    private void LeaveButtonClicked(){
+        LobbyManager.Instance.LeaveLobby();
+        Hide();
     }
 
 }
