@@ -15,8 +15,12 @@ public class JoinedLobbyUI : MonoBehaviour
     [SerializeField] private TMP_Text lobbyID;
     [SerializeField] private Button startButton;
     [SerializeField] private Button leaveButton;
+    [SerializeField] private Button refreshButton;
     [SerializeField] private GameObject playerListPrefab;
+    [SerializeField] private GameObject playerListContainer;
     [SerializeField] private GameObject joinedLobbyPanel;
+
+    private string currentLobbyId;
 
     private void Awake() {
         if (Instance != null && Instance != this) {
@@ -26,10 +30,12 @@ public class JoinedLobbyUI : MonoBehaviour
         Instance = this;
         joinedLobbyPanel.SetActive(false);
         leaveButton.onClick.AddListener(LeaveButtonClicked);
+        refreshButton.onClick.AddListener(UpdateJoinedPlayers);
         // startButton.onClick.AddListener(StartGame);
     }
 
     public void Show(string lobId, string lobName) {
+        currentLobbyId = lobId;
         joinedLobbyPanel.SetActive(true); // Show the panel
         lobbyName.text = lobName; 
         lobbyID.text = lobId;
@@ -41,7 +47,29 @@ public class JoinedLobbyUI : MonoBehaviour
 
     private void LeaveButtonClicked(){
         LobbyManager.Instance.LeaveLobby();
-        Hide();
+        Hide(); 
     }
 
+    public async void UpdateJoinedPlayers() {
+        if (string.IsNullOrEmpty(currentLobbyId)) {
+            Debug.LogError("cannot refresh players, no lobby id");
+        }
+        try{
+            var lobby = await Lobbies.Instance.GetLobbyAsync(currentLobbyId);
+            UpdatePlayerList(lobby.Players);
+        } catch (LobbyServiceException e) {
+            Debug.Log(e);
+        }
+    }
+
+    private void UpdatePlayerList(List<Player> playerList) {
+        foreach (Transform child in playerListContainer.transform) {
+            Destroy(child.gameObject);
+        }
+
+        foreach (Player player in playerList) {
+            GameObject playerItem = Instantiate(playerListPrefab, playerListContainer.transform);
+            playerItem.GetComponentInChildren<TextMeshProUGUI>().text = $"{player.Id}";
+        }
+    }
 }

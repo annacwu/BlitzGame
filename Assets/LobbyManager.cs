@@ -127,10 +127,10 @@ public class LobbyManager : MonoBehaviour
     // THIS IS THE ONE WE'RE USING
     public async void JoinLobby(string lobbyId) {
         try {
-            await Lobbies.Instance.JoinLobbyByIdAsync(lobbyId);
+            var lobby = await Lobbies.Instance.JoinLobbyByIdAsync(lobbyId);
             Debug.Log("Joined lobby with ID: " + lobbyId);
         
-            // FIXME: ativate the panel here
+            JoinedLobbyUI.Instance.UpdateJoinedPlayers();
         } catch (LobbyServiceException e) {
          Debug.LogError("Failed to join lobby: " + e);
         }
