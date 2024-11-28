@@ -8,7 +8,7 @@ using Unity.Networking.Transport;
 public class PlayerSpawnSystem : MonoBehaviour
 {
     [SerializeField] private GameObject playerPrefab = null; 
-    [SerializeField] private GameObject tableObject = null;
+    [SerializeField] private GameObject tableObject = null; // FIXME: this doesnt work anymore. table is a prefab. spawned in stackmanager
 
     // create list of spawnPoints player can be put
     private static List<Transform> spawnPoints = new List<Transform>();

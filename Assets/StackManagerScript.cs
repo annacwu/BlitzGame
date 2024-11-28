@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO.Compression;
 using Unity.Collections;
+using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -25,7 +26,7 @@ public class StackManagerScript : MonoBehaviour
     //[SerializeField] private GameObject deckPrefab; //got rid of deckPrefab bc it was literally the same as stack
     [SerializeField] private GameObject stackPrefab;
     [SerializeField] private GameObject spawnSystem;
-    [SerializeField] private GameObject table;
+    [SerializeField] private GameObject tablePrefab;
 
     [SerializeField] private int numDecksTEMP;
 
@@ -114,6 +115,9 @@ public class StackManagerScript : MonoBehaviour
         //1. spawns a deck, containing all dutch blitz cards per player
         //  a. a deck consists of 40 cards, 4 of each number (1-10) in each of the 4 colors (red, blue, yellow (?), green)
 
+        GameObject table = Instantiate(tablePrefab);
+        var tableNetworkObject = table.GetComponent<NetworkObject>();
+        tableNetworkObject.Spawn(true);
 
         for (int i = 0; i < numDecksTEMP; i++) {
             //computes where decks should go (TEMP)
@@ -138,7 +142,9 @@ public class StackManagerScript : MonoBehaviour
             //spawns decks
             GameObject newDeck = Instantiate(stackPrefab, deckPos, zeroRot, table.transform); //this is a template position - ideally, we'd use the position + rotation of the player
             createFullDeck(newDeck, "template face"); //also template for now :)
-            newDeck.GetComponent<StackScript>().shuffle();
+            var newDeckNetworkObject = newDeck.GetComponent<NetworkObject>();
+            newDeckNetworkObject.Spawn(true);
+            newDeck.GetComponent<StackScript>().shuffle(); // FIXME: maybe should be network version
             newDeck.GetComponent<StackScript>().isDeck = true;
             newDeck.GetComponent<StackScript>().canTransfer = true;
             newDeck.GetComponent<StackScript>().faceOtherWay();
@@ -147,6 +153,8 @@ public class StackManagerScript : MonoBehaviour
             //instantiates acceptor pile
             deckPos.x += 20;
             GameObject newAcceptorPile = Instantiate(stackPrefab, deckPos, zeroRot, table.transform);
+            var newAcceptorPileNetworkObject = newAcceptorPile.GetComponent<NetworkObject>();
+            newAcceptorPileNetworkObject.Spawn(true);
             newAcceptorPile.GetComponent<StackScript>().isAcceptorPile = true;
             newAcceptorPile.GetComponent<StackScript>().canTransfer = true;
 
@@ -157,6 +165,8 @@ public class StackManagerScript : MonoBehaviour
             //sets up the stack of 10
             //zeroPos.x -= 20;
             GameObject stackOf10 = Instantiate(stackPrefab, firstCardPos, zeroRot, table.transform);
+            var stackOf10NetworkObject = stackOf10.GetComponent<NetworkObject>();
+            stackOf10NetworkObject.Spawn(true);
             for (int j = 0; j < 10; j++) {
                 StackScript.CardValues topCard = newDeck.GetComponent<StackScript>().getTopCard();
                 stackOf10.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face);
@@ -167,6 +177,8 @@ public class StackManagerScript : MonoBehaviour
             for (int j = 0; j < 3; j++) {
                 firstCardPos.x -= 20;
                 GameObject newStack = Instantiate(stackPrefab, firstCardPos, zeroRot, table.transform);
+                var newStackNetworkObject = newStack.GetComponent<NetworkObject>();
+                newStackNetworkObject.Spawn(true);
                 StackScript.CardValues topCard = newDeck.GetComponent<StackScript>().getTopCard();
                 newStack.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face);
                 newDeck.GetComponent<StackScript>().removeTopCard();

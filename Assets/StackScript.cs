@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering.RenderGraphModule;
@@ -78,6 +79,8 @@ public class StackScript : MonoBehaviour
     //add card
     public void addCard (int value, Color color, string face) {
         GameObject newCard = Instantiate(cardPrefab, transform.position, transform.rotation, transform); //might want to instantiate in relation to stack, if we decide stacks can move around, rather than worldspace
+        var newCardNetworkObject = newCard.GetComponent<NetworkObject>();
+        newCardNetworkObject.Spawn(true);
 
         cards.AddFirst(new CardValues(value, color, face, newCard));
         newCard.GetComponent<CardScript>().setCard(cards.First.Value);
@@ -171,6 +174,8 @@ public class StackScript : MonoBehaviour
         //load all card gameObjects back into the scene
         for (int i = 0; i < numCards; i++) {
             GameObject newCard = Instantiate(cardPrefab, transform.position, transform.rotation, transform); //might want to instantiate in relation to stack, if we decide stacks can move around, rather than worldspace
+            var newCardNetworkObject = newCard.GetComponent<NetworkObject>();
+            newCardNetworkObject.Spawn(true);
             cards.AddFirst(new CardValues(destroyedCards[i].value, destroyedCards[i].color, destroyedCards[i].face, newCard));
             newCard.GetComponent<CardScript>().setCard(cards.First.Value);
             

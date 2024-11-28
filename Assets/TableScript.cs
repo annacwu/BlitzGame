@@ -6,8 +6,12 @@ using UnityEngine.InputSystem;
 public class TableScript : MonoBehaviour
 {   
 
-    [SerializeField] private GameObject StackManager;
+    private GameObject StackManager;
     [SerializeField] private GameObject stackPrefab;
+
+    void Start() {
+        StackManager = GameObject.FindGameObjectWithTag("StackManger");
+    }
 
     //should check to see if one can create a new stack in the middle
     void OnMouseDown() {
