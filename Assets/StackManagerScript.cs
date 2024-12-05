@@ -118,6 +118,7 @@ public class StackManagerScript : MonoBehaviour
         GameObject table = Instantiate(tablePrefab);
         var tableNetworkObject = table.GetComponent<NetworkObject>();
         tableNetworkObject.Spawn(true);
+        Debug.Log($"[Server] Table Position: {table.transform.position}, Rotation: {table.transform.rotation}");
 
         for (int i = 0; i < numDecksTEMP; i++) {
             //computes where decks should go (TEMP)
@@ -144,6 +145,7 @@ public class StackManagerScript : MonoBehaviour
             createFullDeck(newDeck, "template face"); //also template for now :)
             var newDeckNetworkObject = newDeck.GetComponent<NetworkObject>();
             newDeckNetworkObject.Spawn(true);
+            newDeckNetworkObject.transform.parent = table.transform; //fixes the parent issue >?>?>?
             newDeck.GetComponent<StackScript>().shuffle(); // FIXME: maybe should be network version
             newDeck.GetComponent<StackScript>().isDeck = true;
             newDeck.GetComponent<StackScript>().canTransfer = true;
@@ -155,6 +157,7 @@ public class StackManagerScript : MonoBehaviour
             GameObject newAcceptorPile = Instantiate(stackPrefab, deckPos, zeroRot, table.transform);
             var newAcceptorPileNetworkObject = newAcceptorPile.GetComponent<NetworkObject>();
             newAcceptorPileNetworkObject.Spawn(true);
+            newAcceptorPileNetworkObject.transform.parent = table.transform; //fixes the parent issue >?>?>?
             newAcceptorPile.GetComponent<StackScript>().isAcceptorPile = true;
             newAcceptorPile.GetComponent<StackScript>().canTransfer = true;
 
@@ -167,6 +170,7 @@ public class StackManagerScript : MonoBehaviour
             GameObject stackOf10 = Instantiate(stackPrefab, firstCardPos, zeroRot, table.transform);
             var stackOf10NetworkObject = stackOf10.GetComponent<NetworkObject>();
             stackOf10NetworkObject.Spawn(true);
+            stackOf10NetworkObject.transform.parent = table.transform; //fixes the parent issue >?>?>?
             for (int j = 0; j < 10; j++) {
                 StackScript.CardValues topCard = newDeck.GetComponent<StackScript>().getTopCard();
                 stackOf10.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face);
@@ -179,6 +183,7 @@ public class StackManagerScript : MonoBehaviour
                 GameObject newStack = Instantiate(stackPrefab, firstCardPos, zeroRot, table.transform);
                 var newStackNetworkObject = newStack.GetComponent<NetworkObject>();
                 newStackNetworkObject.Spawn(true);
+                newStackNetworkObject.transform.parent = table.transform; //fixes the parent issue >?>?>?
                 StackScript.CardValues topCard = newDeck.GetComponent<StackScript>().getTopCard();
                 newStack.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face);
                 newDeck.GetComponent<StackScript>().removeTopCard();

@@ -10,7 +10,11 @@ public class TableScript : MonoBehaviour
     [SerializeField] private GameObject stackPrefab;
 
     void Start() {
-        StackManager = GameObject.FindGameObjectWithTag("StackManger");
+        StackManager = GameObject.FindGameObjectWithTag("StackManager");
+    }
+
+    void Update() {
+        Debug.Log($"[Client] Table Position: {transform.position}, Rotation: {transform.rotation}");
     }
 
     //should check to see if one can create a new stack in the middle
@@ -63,4 +67,6 @@ public class TableScript : MonoBehaviour
         
         //Debug.Log("Function Complete");
     }
+
+    
 }

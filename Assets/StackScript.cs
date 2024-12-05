@@ -81,6 +81,7 @@ public class StackScript : MonoBehaviour
         GameObject newCard = Instantiate(cardPrefab, transform.position, transform.rotation, transform); //might want to instantiate in relation to stack, if we decide stacks can move around, rather than worldspace
         var newCardNetworkObject = newCard.GetComponent<NetworkObject>();
         newCardNetworkObject.Spawn(true);
+        newCardNetworkObject.transform.parent = transform; //fixes the parent issue >?>?>?
 
         cards.AddFirst(new CardValues(value, color, face, newCard));
         newCard.GetComponent<CardScript>().setCard(cards.First.Value);
@@ -176,6 +177,7 @@ public class StackScript : MonoBehaviour
             GameObject newCard = Instantiate(cardPrefab, transform.position, transform.rotation, transform); //might want to instantiate in relation to stack, if we decide stacks can move around, rather than worldspace
             var newCardNetworkObject = newCard.GetComponent<NetworkObject>();
             newCardNetworkObject.Spawn(true);
+            newCardNetworkObject.transform.parent = transform; //fixes the parent issue >?>?>?
             cards.AddFirst(new CardValues(destroyedCards[i].value, destroyedCards[i].color, destroyedCards[i].face, newCard));
             newCard.GetComponent<CardScript>().setCard(cards.First.Value);
             
