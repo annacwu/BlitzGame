@@ -2238,7 +2238,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerPrefab: {fileID: 7474896340404332634, guid: fbcf3af815c434f4b832bd0250069cfb, type: 3}
-  tableObject: {fileID: 0}
+  tableObject: {fileID: 5584142126847178136, guid: 334f0cebd1ced4402b8933edb043abaa, type: 3}
 --- !u!4 &3471192689173851396
 Transform:
   m_ObjectHideFlags: 0
