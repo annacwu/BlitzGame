@@ -14,7 +14,7 @@ public class TableScript : MonoBehaviour
     }
 
     void Update() {
-        Debug.Log($"[Client] Table Position: {transform.position}, Rotation: {transform.rotation}");
+        // Debug.Log($"[Client] Table Position: {transform.position}, Rotation: {transform.rotation}");
     }
 
     //should check to see if one can create a new stack in the middle

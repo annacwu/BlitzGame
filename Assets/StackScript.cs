@@ -84,11 +84,12 @@ public class StackScript : MonoBehaviour
         newCardNetworkObject.transform.parent = transform; //fixes the parent issue >?>?>?
 
         cards.AddFirst(new CardValues(value, color, face, newCard));
-        newCard.GetComponent<CardScript>().setCard(cards.First.Value);
+        newCardNetworkObject.GetComponent<CardScript>().setCard(cards.First.Value); // something about changin this to a network object maybe made it so they move on both machines when a card is played?
 
         //trying to get UI to render properly by setting order in layer to 2 above each card below
-        newCard.GetComponent<SpriteRenderer>().sortingOrder = numCards*2 + 1;
-        newCard.GetComponentInChildren<Canvas>().sortingOrder = (numCards * 2) + 2;
+        // THIS PART ISNT WORKING ON NETWORK
+        newCardNetworkObject.GetComponent<SpriteRenderer>().sortingOrder = numCards*2 + 1;
+        newCardNetworkObject.GetComponentInChildren<Canvas>().sortingOrder = (numCards * 2) + 2;
 
         numCards++;
     }
