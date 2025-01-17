@@ -142,10 +142,11 @@ public class StackManagerScript : MonoBehaviour
 
             //spawns decks
             GameObject newDeck = Instantiate(stackPrefab, deckPos, zeroRot, table.transform); //this is a template position - ideally, we'd use the position + rotation of the player
-            createFullDeck(newDeck, "template face"); //also template for now :)
+            //createFullDeck(newDeck, "template face"); //also template for now :)
             var newDeckNetworkObject = newDeck.GetComponent<NetworkObject>();
             newDeckNetworkObject.Spawn(true);
             newDeckNetworkObject.transform.parent = table.transform; //fixes the parent issue >?>?>?
+            createFullDeck(newDeck, "template face"); //moving this line of code down fixed a bunch of errors I was getting and I have no idea why :)
             newDeck.GetComponent<StackScript>().shuffle(); // FIXME: maybe should be network version
             newDeck.GetComponent<StackScript>().isDeck = true;
             newDeck.GetComponent<StackScript>().canTransfer = true;

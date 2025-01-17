@@ -2,12 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using Unity.Netcode;
+using Unity.Properties;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering.RenderGraphModule;
 
-public class StackScript : MonoBehaviour
+public class StackScript : NetworkBehaviour
 {   
 
     [SerializeField] private Sprite faceUpSprite;
@@ -24,6 +26,8 @@ public class StackScript : MonoBehaviour
     //a comment 
 
     private int numCards = 0; //counts # of cards in the linked list
+
+    //private NetworkVariable<int> sortOrder = new(0); //stores what sorting order the next card should have
 
     public class CardValues {
         public bool destroyed;
@@ -78,18 +82,17 @@ public class StackScript : MonoBehaviour
 
     //add card
     public void addCard (int value, Color color, string face) {
+        //sets sorting order networkvariable to ensure cards are displayed right
         GameObject newCard = Instantiate(cardPrefab, transform.position, transform.rotation, transform); //might want to instantiate in relation to stack, if we decide stacks can move around, rather than worldspace
         var newCardNetworkObject = newCard.GetComponent<NetworkObject>();
         newCardNetworkObject.Spawn(true);
         newCardNetworkObject.transform.parent = transform; //fixes the parent issue >?>?>?
 
         cards.AddFirst(new CardValues(value, color, face, newCard));
-        newCardNetworkObject.GetComponent<CardScript>().setCard(cards.First.Value); // something about changin this to a network object maybe made it so they move on both machines when a card is played?
+        setCardValuesRpc(newCardNetworkObject.NetworkObjectId, value, color, face);
+        //newCardNetworkObject.GetComponent<CardScript>().setCard(cards.First.Value); // something about changin this to a network object maybe made it so they move on both machines when a card is played?
 
-        //trying to get UI to render properly by setting order in layer to 2 above each card below
-        // THIS PART ISNT WORKING ON NETWORK
-        newCardNetworkObject.GetComponent<SpriteRenderer>().sortingOrder = numCards*2 + 1;
-        newCardNetworkObject.GetComponentInChildren<Canvas>().sortingOrder = (numCards * 2) + 2;
+        cardOrderRpc(newCardNetworkObject.NetworkObjectId, numCards);
 
         numCards++;
     }
@@ -175,18 +178,22 @@ public class StackScript : MonoBehaviour
 
         //load all card gameObjects back into the scene
         for (int i = 0; i < numCards; i++) {
+            //sets sorting order networkvariable to ensure cards are displayed right
+
             GameObject newCard = Instantiate(cardPrefab, transform.position, transform.rotation, transform); //might want to instantiate in relation to stack, if we decide stacks can move around, rather than worldspace
             var newCardNetworkObject = newCard.GetComponent<NetworkObject>();
             newCardNetworkObject.Spawn(true);
             newCardNetworkObject.transform.parent = transform; //fixes the parent issue >?>?>?
             cards.AddFirst(new CardValues(destroyedCards[i].value, destroyedCards[i].color, destroyedCards[i].face, newCard));
-            newCard.GetComponent<CardScript>().setCard(cards.First.Value);
             
-            //trying to get UI to render properly
-            newCard.GetComponent<SpriteRenderer>().sortingOrder = i*2 + 1;
-            newCard.GetComponentInChildren<Canvas>().sortingOrder = (i * 2) + 2;
+            setCardValuesRpc(newCardNetworkObject.NetworkObjectId, destroyedCards[i].value, destroyedCards[i].color, destroyedCards[i].face);
+            //newCard.GetComponent<CardScript>().setCard(cards.First.Value); //check if this works on the network
+            
+            //trying to get UI to render properly. does not work across the network
+            cardOrderRpc(newCardNetworkObject.NetworkObjectId, i);
            
         }
+        
     }
 
     //getter for isDeck
@@ -234,5 +241,17 @@ public class StackScript : MonoBehaviour
 
     }
 
+    [Rpc(SendTo.Everyone)]
+    void cardOrderRpc (ulong cardID, int multNum) {
+        NetworkObject targetCard = GetNetworkObject(cardID);
+        targetCard.GetComponent<SpriteRenderer>().sortingOrder = multNum*2 + 1;
+        targetCard.GetComponentInChildren<Canvas>().sortingOrder = multNum*2 + 2;
+    }
 
+    [Rpc(SendTo.Everyone)]
+    void setCardValuesRpc (ulong cardID, int value, Color color, string face) {
+        NetworkObject targetCard = GetNetworkObject(cardID);
+        targetCard.GetComponent<CardScript>().setCard(value, color, face);
+    }
+    
 }
