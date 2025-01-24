@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 public class CardScript : NetworkBehaviour
 {
-    
+    //love how cardscript has more commented out code than functional code. clearly my ideas are always good and never need fixing. 
     [SerializeField] private TMP_Text topValueText;
     [SerializeField] private TMP_Text bottomValueText;
     [SerializeField] private GameObject thisGameObject;
@@ -54,7 +54,7 @@ public class CardScript : NetworkBehaviour
         //add visual change face
 
         //sets struct for future reference
-        thisCard = new(value, color, face, gameObject);
+        thisCard = new(value, color, face, this.NetworkObjectId);
     }
 
 }

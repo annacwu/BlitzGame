@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+// using Mono.Cecil;
 using TMPro;
 using Unity.Netcode;
 using Unity.Properties;
@@ -34,20 +35,23 @@ public class StackScript : NetworkBehaviour
         public int value; //number on the card, 2-10
         public Color color; //color of the card, determining where it can be placed
         public string face; //the symbol on the back, determining who owns the card, and gets points from it
-        GameObject inGameObject; //reference to the actual Card object in the scene, so we can do stuff to it later
+        public ulong inGameObjectID; //reference to the actual Card object in the scene, so we can do stuff to it later
+        //NetworkObject inGameObject; //not sure if we need this - if we do i'll reimplement it
 
-        public CardValues (int v, Color c, string f, GameObject g) {
+        public CardValues (int v, Color c, string f, ulong g) {
             value = v;
             color = c;
             face = f;
-            inGameObject = g;
+            inGameObjectID = g;
+            //inGameObject = GetNetworkObject(g);
             destroyed = false;
         }
 
+        /*
         public void destroyObject(){
-            Destroy(inGameObject);
-            //Debug.Log("Object Destroyed");
-        }
+            Destroy(GetNetworkObject(inGameObjectID)); //not entirely sure this works. oh well. 
+            Debug.Log("Object Destroyed"); 
+        }*/
     }
 
     //when you load into the game, this should be filled according to what kind of stack it is
@@ -70,17 +74,20 @@ public class StackScript : NetworkBehaviour
 
 
     //calls selectStack in the stackmanager.
+    //doesn't need to be on network bc local. 
     public void selectThisStack () {
         //Debug.Log("Trying to select a stack - StackScript");
         selected = smanager.selectStack(gameObject);
     }
 
+    //NOT NETWORK READY (but does it have to be network ready idk man)
     public void addBlankCard() {
         addCard(0, new Color(1, 1, 1, 1), null);
         numCards++;
     }
 
     //add card
+    //I THINK NETWORK READY
     public void addCard (int value, Color color, string face) {
         //sets sorting order networkvariable to ensure cards are displayed right
         GameObject newCard = Instantiate(cardPrefab, transform.position, transform.rotation, transform); //might want to instantiate in relation to stack, if we decide stacks can move around, rather than worldspace
@@ -88,23 +95,28 @@ public class StackScript : NetworkBehaviour
         newCardNetworkObject.Spawn(true);
         newCardNetworkObject.transform.parent = transform; //fixes the parent issue >?>?>?
 
-        cards.AddFirst(new CardValues(value, color, face, newCard));
+        //deals with adding new card to the linked list on the network, and setting values + ordering on all networks. 
+        addCardRpc(this.NetworkObjectId, value, color, face, newCardNetworkObject.NetworkObjectId);
         setCardValuesRpc(newCardNetworkObject.NetworkObjectId, value, color, face);
-        //newCardNetworkObject.GetComponent<CardScript>().setCard(cards.First.Value); // something about changin this to a network object maybe made it so they move on both machines when a card is played?
-
         cardOrderRpc(newCardNetworkObject.NetworkObjectId, numCards);
 
         numCards++;
     }
 
     //take top card, put it somewhere else?
+    //NOT NETWORK READY
     public void removeTopCard () {
         //CardValues topCard = cards.First.Value;
         //Debug.Log(cards.First.Value);
         if (cards.First != null) {
             CardValues topCard = cards.First.Value;
-            topCard.destroyObject();
-            cards.RemoveFirst();
+
+            NetworkObject realCard = GetNetworkObject(topCard.inGameObjectID);
+            Destroy(realCard);
+            //topCard.destroyObject();
+            
+            removeCardRpc(this.NetworkObjectId);
+            //cards.RemoveFirst();
             numCards--;
         }
         
@@ -123,6 +135,7 @@ public class StackScript : NetworkBehaviour
     //shuffle deck pershlaps
     //currently very unoptomized i think but might not matter since shuffling isn't something that happens during important gameplay
     // shuffles order of linked list, then calls reload to reset visual representation of cards.
+    //NOT GOOD ON THE NETWORK. BAD BAD BAD.
     public void shuffle () {
         LinkedListNode<CardValues> firstCard;
         //Debug.Log("Shuffle Called");
@@ -164,6 +177,7 @@ public class StackScript : NetworkBehaviour
     }
 
     //helper function, resets all cards (removes them all, then spawns them all in in order)
+    //SHOULD BE NETWORK PROOF
     private void reload() {
 
         CardValues[] destroyedCards = new CardValues[numCards];
@@ -171,9 +185,13 @@ public class StackScript : NetworkBehaviour
         //destroy all card gameObjects
         for (int i = 0; i < numCards; i++) {
             CardValues topCard = cards.First.Value;
-            destroyedCards[i] = new CardValues(topCard.value, topCard.color, topCard.face, null);
-            topCard.destroyObject();
-            cards.RemoveFirst();
+            destroyedCards[i] = new CardValues(topCard.value, topCard.color, topCard.face, 0); //sets ulong to 0 bc null doesn't exist - hopefully this doesn't cause problems :)
+            NetworkObject realCard = GetNetworkObject(topCard.inGameObjectID);
+            Destroy(realCard);
+            //topCard.destroyObject();
+            
+            removeCardRpc(this.NetworkObjectId);
+            //cards.RemoveFirst();
         }
 
         //load all card gameObjects back into the scene
@@ -184,7 +202,9 @@ public class StackScript : NetworkBehaviour
             var newCardNetworkObject = newCard.GetComponent<NetworkObject>();
             newCardNetworkObject.Spawn(true);
             newCardNetworkObject.transform.parent = transform; //fixes the parent issue >?>?>?
-            cards.AddFirst(new CardValues(destroyedCards[i].value, destroyedCards[i].color, destroyedCards[i].face, newCard));
+
+            addCardRpc(this.NetworkObjectId, destroyedCards[i].value, destroyedCards[i].color, destroyedCards[i].face, newCardNetworkObject.NetworkObjectId);
+            //cards.AddFirst(new CardValues(destroyedCards[i].value, destroyedCards[i].color, destroyedCards[i].face, newCard));
             
             setCardValuesRpc(newCardNetworkObject.NetworkObjectId, destroyedCards[i].value, destroyedCards[i].color, destroyedCards[i].face);
             //newCard.GetComponent<CardScript>().setCard(cards.First.Value); //check if this works on the network
@@ -201,6 +221,7 @@ public class StackScript : NetworkBehaviour
         return isDeck;
     }
 
+    //NOT ON NETWORK
     public void faceOtherWay () {
         SpriteRenderer stackRenderer = gameObject.GetComponent<SpriteRenderer>();
 
@@ -241,6 +262,7 @@ public class StackScript : NetworkBehaviour
 
     }
 
+    //sets order of sprite of specific card 
     [Rpc(SendTo.Everyone)]
     void cardOrderRpc (ulong cardID, int multNum) {
         NetworkObject targetCard = GetNetworkObject(cardID);
@@ -248,10 +270,29 @@ public class StackScript : NetworkBehaviour
         targetCard.GetComponentInChildren<Canvas>().sortingOrder = multNum*2 + 2;
     }
 
+    //makes visual changes to card to reflect value, color, face, etc. 
     [Rpc(SendTo.Everyone)]
     void setCardValuesRpc (ulong cardID, int value, Color color, string face) {
         NetworkObject targetCard = GetNetworkObject(cardID);
         targetCard.GetComponent<CardScript>().setCard(value, color, face);
     }
+
+    //adds card to linked list that stores all the cards. needed i think. 
+    [Rpc(SendTo.Everyone)]
+    void addCardRpc (ulong stackID, int value, Color color, string face, ulong cardID) {
+        NetworkObject targetStack = GetNetworkObject(stackID);
+        CardValues cardToAdd = new CardValues(value, color, face, cardID);
+
+        targetStack.GetComponent<StackScript>().cards.AddFirst(cardToAdd);
+    }
+
+    //in theory removes the card the same way that other rpc adds the card
+    [Rpc(SendTo.Everyone)]
+    void removeCardRpc (ulong stackID) {
+        NetworkObject targetStack = GetNetworkObject(stackID);
+        targetStack.GetComponent<StackScript>().cards.RemoveFirst();
+    }
     
 }
+
+//btw my comments are so professional and definitely would pass muster in a real work environment. 

@@ -71,6 +71,7 @@ public class StackManagerScript : MonoBehaviour
 
         } else if (stackSelected && currentStack != selectedStack) { //should handle transferring cards
 
+            //TODO: Update to network
             //should handle deciding if one can transfer cards.
             //if tranfer is possible: transfer, but do not change selection. 
             //if not possible: do not transfer, change selection to new stack. 
