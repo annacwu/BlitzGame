@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class TableScript : MonoBehaviour
+public class TableScript : NetworkBehaviour
 {   
 
     private GameObject StackManager;
@@ -54,9 +55,13 @@ public class TableScript : MonoBehaviour
 
             //Debug.Log("Placed new card at X = " + mouseRealLoc.x + " and Y =" + mouseRealLoc.y);
 
-            GameObject newStack = Instantiate(stackPrefab, mouseRealLoc, transform.rotation, transform);
+            
+            
+            /*GameObject newStack = Instantiate(stackPrefab, mouseRealLoc, transform.rotation, transform);
 
-            newStack.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face); //add new card to selected stack
+            newStack.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face); //add new card to selected stack*/
+            
+            createNewStackRpc(mouseRealLoc, topCard.value, topCard.color, topCard.face);
             currentStack.GetComponent<StackScript>().removeTopCard();
 
             managerScript.deselectStack(); //ensures we deselect the stack we got the card from - otherwise leads to errors
@@ -66,6 +71,18 @@ public class TableScript : MonoBehaviour
         
         
         //Debug.Log("Function Complete");
+    }
+
+    //Instantiates new stack with the card that needs to be added to it. 
+    [Rpc(SendTo.Server)]
+    void createNewStackRpc (Vector2 mouseRealLoc, int value, Color color, string face) {
+        GameObject newStack = Instantiate(stackPrefab, mouseRealLoc, transform.rotation, transform);
+        NetworkObject newStackNetObj = newStack.GetComponent<NetworkObject>();
+        newStackNetObj.Spawn(true);
+
+        newStack.GetComponent<StackScript>().addCard(value, color, face); //add new card to selected stack
+        
+        //currentStack.GetComponent<StackScript>().removeTopCard();
     }
 
     

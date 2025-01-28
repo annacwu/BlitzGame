@@ -23,26 +23,12 @@ public class StackManagerScript : MonoBehaviour
     private GameObject currentStack;
 
     [SerializeField] private Color selectedColor;
-    //[SerializeField] private GameObject deckPrefab; //got rid of deckPrefab bc it was literally the same as stack
     [SerializeField] private GameObject stackPrefab;
     [SerializeField] private GameObject spawnSystem;
     [SerializeField] private GameObject tablePrefab;
 
-    [SerializeField] private int numDecksTEMP;
-
-
-    // Start is called before the first frame update
-    //void Start()
-    //{
-    //    
-    //}
-
-    // Update is called once per frame
-    //void Update()
-    //{
-    //    
-    //}
-
+    //NUMBER OF DECKS TO SPAWN, SHOULD BE REPLACED BY AUTOMATIC DETERMINATION OF HOW MANY PLAYERS ARE PLAYING
+    [SerializeField] private int numDecksTEMP; 
 
     //handles selecting a stack - if already have a stack selected, then either deselects or replaces.
     //currently the only way to know what stack is selected is to look at the console :)
@@ -52,8 +38,12 @@ public class StackManagerScript : MonoBehaviour
     //1) add code for taking 3 cards at a time from a player's deck [ ]
     //2) add code for putting 1's in the middle to create new decks [X]
     //3) update for networks at some point                          [ ]
+    //4) Make it so that clicking on a blank point of the screen deselects the stack you have selected
     
+    //NETWORK PROOF I THINK. I DON'T THINK ANY OF THIS CODE HAS TO BE ON THE NETWORK ACTUALLY SO THAT'S COOL
     public bool selectStack (GameObject selectedStack) {
+        //ulong stackNetworkID = selectedStack.GetComponent<NetworkObject>().NetworkObjectId; //don't actually have to use this i think
+
         //if no stack is selected, selected stack that was clicked on
         if (!stackSelected) {
             stackSelected = true;
@@ -62,6 +52,7 @@ public class StackManagerScript : MonoBehaviour
 
             return stackSelected;
 
+        //if you click a stack that is already selected, deselect it
         } else if (stackSelected && currentStack == selectedStack) {
 
             stackSelected = false;
@@ -73,10 +64,9 @@ public class StackManagerScript : MonoBehaviour
 
             //TODO: Update to network
             //should handle deciding if one can transfer cards.
+            
             //if tranfer is possible: transfer, but do not change selection. 
             //if not possible: do not transfer, change selection to new stack. 
-
-
             StackScript.CardValues currentTopCard = null;
             StackScript.CardValues newTopCard = null;
             
@@ -86,14 +76,7 @@ public class StackManagerScript : MonoBehaviour
                 newTopCard = selectedStack.GetComponent<StackScript>().getTopCard();
             }
 
-            //trasnferring 3 at a time (we are implementing this as a button i decided)
-            /*
-            if (currentTopCard != null && newTopCard != null && currentStack.GetComponent<StackScript>().isDeck == true && selectedStack.GetComponent<StackScript>().isAcceptorPile == true) {
-                transferThree();
-            }*/
-            
-
-            if (currentTopCard != null && newTopCard != null && currentTopCard.value - 1 == newTopCard.value && currentTopCard.color == newTopCard.color && currentStack.GetComponent<StackScript>().canTransfer == true) {
+            if (currentTopCard.value - 1 == newTopCard.value && currentTopCard.color == newTopCard.color && currentStack.GetComponent<StackScript>().canTransfer == true) {
                 //transfer
                 //Debug.Log("Trying to Transfer!!");
                 selectedStack.GetComponent<StackScript>().addCard(currentTopCard.value, currentTopCard.color, currentTopCard.face); //add new card to selected stack
@@ -112,8 +95,8 @@ public class StackManagerScript : MonoBehaviour
     }
 
     //spawns cards in a configuration for the start of the game
+    //CAN ONLY BE RUN ON THE SERVER. we can either fix this down the line or make it a feature (which i think makes sense anyways)
     public void startGame(/*GameObject[] players, int numPlayers*/ /*takes in players / position of players maybe?*/) {
-        //1. spawns a deck, containing all dutch blitz cards per player
         //  a. a deck consists of 40 cards, 4 of each number (1-10) in each of the 4 colors (red, blue, yellow (?), green)
 
         GameObject table = Instantiate(tablePrefab);
