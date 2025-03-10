@@ -15,15 +15,22 @@ public class StackScript : NetworkBehaviour
 
     [SerializeField] private Sprite faceUpSprite;
     [SerializeField] private Sprite faceDownSprite;
-    private bool isFacingUp = true;
-    public bool isAcceptorPile = false; //acceptor pile denotes the stack that accepts 3 cards at a time from the deck
+    
+    //track which way a stack is facing
+    private NetworkVariable<bool> isFacingUp = new(true);
+
+    //public bool isAcceptorPile = false; //acceptor pile denotes the stack that accepts 3 cards at a time from the deck
 
     private bool selected = false; //determines whether the stack has been clicked once (e.g to move a card)
     private StackManagerScript smanager;
     public GameObject cardPrefab;
     [SerializeField] public bool isDeck = false; //decks start with a full deck of cards, which is shuffled automatically. Decks are spawned in when the game starts, & handle the whole doling out cards thing.
-    [SerializeField] public bool canTransfer = true; //you cannot transfer from the main deck, or from stacks placed in the middle. 
-    private bool canAcceptCards; //decks and the stack of 10 cards cannot accept any cards. This variable will be set when a stack is created. 
+    public bool isAcceptorPile = false;
+    public bool canAcceptCards = true;
+
+    public NetworkVariable<bool> canTransfer = new(true); //you cannot transfer from the main deck, or from stacks placed in the middle. 
+
+   // private bool canAcceptCards; //decks and the stack of 10 cards cannot accept any cards. This variable will be set when a stack is created. 
     //a comment 
 
     private int numCards = 0; //counts # of cards in the linked list
@@ -214,21 +221,18 @@ public class StackScript : NetworkBehaviour
 
     //NOT ON NETWORK
     public void faceOtherWay () {
-        SpriteRenderer stackRenderer = gameObject.GetComponent<SpriteRenderer>();
 
         //handles changing visuals so you can / can't see cards. 
         //eventually, flipped sprite should show face of cards flipped
         //not actually hard to do but im focusing on smth else today
-        if (isFacingUp) { 
-            isFacingUp = false;
-            canTransfer = false; //facedown decks should not be able to transfer cards. 
-            stackRenderer.sprite = faceDownSprite;
-            stackRenderer.sortingOrder = 100;
+        if (isFacingUp.Value) { 
+            isFacingUp.Value = false;
+            //canTransfer.Value = false; //facedown decks should not be able to transfer cards. 
+            deckOrderRpc(gameObject.GetComponent<NetworkObject>().NetworkObjectId, true);
         } else {
-            isFacingUp = true;
-            canTransfer = true;
-            stackRenderer.sprite = faceUpSprite;
-            stackRenderer.sortingOrder = 0;
+            isFacingUp.Value = true;
+            //canTransfer.Value = true;
+            deckOrderRpc(gameObject.GetComponent<NetworkObject>().NetworkObjectId, false);
         }
 
         LinkedListNode<CardValues> currentNode = cards.First;
@@ -259,6 +263,19 @@ public class StackScript : NetworkBehaviour
         NetworkObject targetCard = GetNetworkObject(cardID);
         targetCard.GetComponent<SpriteRenderer>().sortingOrder = multNum*2 + 1;
         targetCard.GetComponentInChildren<Canvas>().sortingOrder = multNum*2 + 2;
+    }
+
+    //sets order of sprite and facedown sprite of flipped decks
+    [Rpc(SendTo.Everyone)]
+    void deckOrderRpc (ulong deckID, bool wasFacingUp) {
+        NetworkObject targetDeck = GetNetworkObject(deckID);
+        if (wasFacingUp) {
+            targetDeck.GetComponent<SpriteRenderer>().sortingOrder = 100;
+            targetDeck.GetComponent<SpriteRenderer>().sprite = faceDownSprite;    
+        } else {
+            targetDeck.GetComponent<SpriteRenderer>().sortingOrder = 0;
+            targetDeck.GetComponent<SpriteRenderer>().sprite = faceUpSprite;
+        }
     }
 
     //makes visual changes to card to reflect value, color, face, etc. 

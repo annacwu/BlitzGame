@@ -211,6 +211,7 @@ MonoBehaviour:
   stackPrefab: {fileID: 5234375499342486173, guid: c1f7fe6136df84c48be47dfa6e947a7b, type: 3}
   spawnSystem: {fileID: 832053210}
   tablePrefab: {fileID: 5584142126847178136, guid: 334f0cebd1ced4402b8933edb043abaa, type: 3}
+  BButtonPrefab: {fileID: 381340231633914024, guid: e2350ad10b4e5364caa7ff2512fc2d7e, type: 3}
   numDecksTEMP: 4
 --- !u!4 &373361820
 Transform:

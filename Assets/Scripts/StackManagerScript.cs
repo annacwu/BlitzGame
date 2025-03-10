@@ -5,6 +5,7 @@ using Unity.Collections;
 using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 
 /// <summary>
@@ -14,7 +15,6 @@ using UnityEngine;
 /// not what is contained in each stack
 /// so, this decides where to send cards
 /// and then those cards are updated on the network
-/// (i am not confident that this actually works in practice we shall see)
 /// </summary>
 public class StackManagerScript : MonoBehaviour 
 {
@@ -26,6 +26,7 @@ public class StackManagerScript : MonoBehaviour
     [SerializeField] private GameObject stackPrefab;
     [SerializeField] private GameObject spawnSystem;
     [SerializeField] private GameObject tablePrefab;
+    [SerializeField] private GameObject BButtonPrefab;
 
     //NUMBER OF DECKS TO SPAWN, SHOULD BE REPLACED BY AUTOMATIC DETERMINATION OF HOW MANY PLAYERS ARE PLAYING
     [SerializeField] private int numDecksTEMP; 
@@ -35,9 +36,6 @@ public class StackManagerScript : MonoBehaviour
     //returns stackSelected so that the stack knows whether it is selected or not
 
     //TO DO
-    //1) add code for taking 3 cards at a time from a player's deck [ ]
-    //2) add code for putting 1's in the middle to create new decks [X]
-    //3) update for networks at some point                          [ ]
     //4) Make it so that clicking on a blank point of the screen deselects the stack you have selected
     
     //NETWORK PROOF I THINK. I DON'T THINK ANY OF THIS CODE HAS TO BE ON THE NETWORK ACTUALLY SO THAT'S COOL
@@ -69,14 +67,38 @@ public class StackManagerScript : MonoBehaviour
             //if not possible: do not transfer, change selection to new stack. 
             StackScript.CardValues currentTopCard = null;
             StackScript.CardValues newTopCard = null;
-            
-            //normal card transferring
-            if (currentStack.GetComponent<StackScript>().getTopCard() != null && selectedStack.GetComponent<StackScript>().getTopCard() != null) {
+
+            StackScript cScript = currentStack.GetComponent<StackScript>();
+            StackScript sScript = selectedStack.GetComponent<StackScript>();;
+
+            //if transferring from deck to acceptor pile, call function to transfer 3 at a time
+            if (cScript.isDeck && sScript.isAcceptorPile) {
+                transferThree(currentStack, selectedStack);
+                return stackSelected;
+            } else if (cScript.isAcceptorPile && sScript.isDeck && sScript.getTopCard() == null) {
+                resetAcceptor(currentStack, selectedStack);
+                return stackSelected;
+            } else {
                 currentTopCard = currentStack.GetComponent<StackScript>().getTopCard();
                 newTopCard = selectedStack.GetComponent<StackScript>().getTopCard();
             }
+            
+            //normal card transferring
+            if (cScript.getTopCard() != null && sScript.getTopCard() != null && sScript.canAcceptCards) {
+                //Debug.Log("transferring from a deck: " + cScript.isDeck + "transferring to an acceptor pile: " + sScript.isAcceptorPile);
+            } else if (cScript.getTopCard() != null && cScript.canTransfer.Value && sScript.canAcceptCards) {
+                //empty stacks can accept any card
+                currentTopCard = currentStack.GetComponent<StackScript>().getTopCard();
+                selectedStack.GetComponent<StackScript>().addCard(currentTopCard.value, currentTopCard.color, currentTopCard.face);
+                currentStack.GetComponent<StackScript>().removeTopCard();
+                return stackSelected;
+            } else {
+                //if transferring stack is empty, simply deselect all. 
+                deselectStack();
+                return false;
+            }
 
-            if (currentTopCard.value - 1 == newTopCard.value && currentTopCard.color == newTopCard.color && currentStack.GetComponent<StackScript>().canTransfer == true) {
+            if (currentTopCard.value - 1 == newTopCard.value && currentTopCard.color == newTopCard.color && cScript.canTransfer.Value == true && !sScript.isAcceptorPile) {
                 //transfer
                 //Debug.Log("Trying to Transfer!!");
                 selectedStack.GetComponent<StackScript>().addCard(currentTopCard.value, currentTopCard.color, currentTopCard.face); //add new card to selected stack
@@ -131,11 +153,11 @@ public class StackManagerScript : MonoBehaviour
             newDeckNetworkObject.Spawn(true);
             newDeckNetworkObject.transform.parent = table.transform; //fixes the parent issue >?>?>?
             createFullDeck(newDeck, "template face"); //moving this line of code down fixed a bunch of errors I was getting and I have no idea why :)
-            newDeck.GetComponent<StackScript>().shuffle(); // FIXME: maybe should be network version
+            newDeck.GetComponent<StackScript>().shuffle();
             newDeck.GetComponent<StackScript>().isDeck = true;
-            newDeck.GetComponent<StackScript>().canTransfer = true;
+            newDeck.GetComponent<StackScript>().canTransfer.Value = true;
+            newDeck.GetComponent<StackScript>().canAcceptCards = false;
             newDeck.GetComponent<StackScript>().faceOtherWay();
-
 
             //instantiates acceptor pile
             deckPos.x += 20;
@@ -144,10 +166,14 @@ public class StackManagerScript : MonoBehaviour
             newAcceptorPileNetworkObject.Spawn(true);
             newAcceptorPileNetworkObject.transform.parent = table.transform; //fixes the parent issue >?>?>?
             newAcceptorPile.GetComponent<StackScript>().isAcceptorPile = true;
-            newAcceptorPile.GetComponent<StackScript>().canTransfer = true;
+            newAcceptorPile.GetComponent<StackScript>().canTransfer.Value = true;
 
-            //add button to newDeck that handles transferring 3
-
+            //spawns blitz button
+            deckPos.x += 20;
+            GameObject blitzButton = Instantiate(BButtonPrefab, deckPos, zeroRot, table.transform);
+            var blitzButtonNetworkObject = blitzButton.GetComponent<NetworkObject>();
+            blitzButtonNetworkObject.Spawn(true);
+            blitzButtonNetworkObject.transform.SetParent(table.transform);
             //sets up game
 
             //sets up the stack of 10
@@ -161,6 +187,7 @@ public class StackManagerScript : MonoBehaviour
                 stackOf10.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face);
                 newDeck.GetComponent<StackScript>().removeTopCard();
             }
+            stackOf10.GetComponent<StackScript>().canAcceptCards = false;
 
             //sets up the three other stacks
             for (int j = 0; j < 3; j++) {
@@ -210,15 +237,36 @@ public class StackManagerScript : MonoBehaviour
     //resets selection so that no stack is currently selected
     public void deselectStack () {
         stackSelected = false;
+        currentStack.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1); //resets color of deselected stack to white
+        currentStack = null;
     }
 
     //transfer 3 cards from the deck to the acceptor pile. if there are no cards left, transfer back to deck from acceptor. 
     private void transferThree (GameObject deck, GameObject acceptor) {
-        
+        StackScript dScript = deck.GetComponent<StackScript>();
+        StackScript aScript = acceptor.GetComponent<StackScript>();
+
+        StackScript.CardValues dTop = dScript.getTopCard();
+
+        for (int i = 0; i < 3; i++) {
+            if (dTop != null) {
+                aScript.addCard(dTop.value, dTop.color, dTop.face);
+                dScript.removeTopCard();
+                dTop = dScript.getTopCard();
+            } 
+        }
     }
 
     //put all cards in the acceptor pile back in the right order in the deck
-    public void resetAcceptor() {
+    private void resetAcceptor(GameObject acceptor, GameObject deck) {
+        StackScript aScript = acceptor.GetComponent<StackScript>();
+        StackScript dScript = deck.GetComponent<StackScript>();
+        StackScript.CardValues aTop = aScript.getTopCard();
 
+        while (aTop != null) {
+            dScript.addCard(aTop.value, aTop.color, aTop.face);
+            aScript.removeTopCard();
+            aTop = aScript.getTopCard();
+        }
     }
 }

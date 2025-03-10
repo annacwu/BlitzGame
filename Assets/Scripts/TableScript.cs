@@ -32,9 +32,9 @@ public class TableScript : NetworkBehaviour
         GameObject currentStack = managerScript.returnCurrentSelection();
         StackScript.CardValues topCard = currentStack.GetComponent<StackScript>().getTopCard();
 
-        if (topCard == null || currentStack.GetComponent<StackScript>().canTransfer == false) 
+        if (topCard == null || currentStack.GetComponent<StackScript>().canTransfer.Value == false) 
         {
-            //Debug.Log("Stack has no cards or you may not transfer from this type of stack.");
+            managerScript.deselectStack();
             return;
         }
 
@@ -66,7 +66,7 @@ public class TableScript : NetworkBehaviour
 
             managerScript.deselectStack(); //ensures we deselect the stack we got the card from - otherwise leads to errors
         } else {
-            //Debug.Log("Top Card Value = " + topCard.value);
+            managerScript.deselectStack();
         }
         
         
@@ -81,6 +81,7 @@ public class TableScript : NetworkBehaviour
         newStackNetObj.Spawn(true);
 
         newStack.GetComponent<StackScript>().addCard(value, color, face); //add new card to selected stack
+        newStack.GetComponent<StackScript>().canTransfer.Value = false;
         
         //currentStack.GetComponent<StackScript>().removeTopCard();
     }
