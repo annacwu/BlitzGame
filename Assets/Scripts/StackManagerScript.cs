@@ -29,7 +29,7 @@ public class StackManagerScript : MonoBehaviour
     [SerializeField] private GameObject BButtonPrefab;
 
     //NUMBER OF DECKS TO SPAWN, SHOULD BE REPLACED BY AUTOMATIC DETERMINATION OF HOW MANY PLAYERS ARE PLAYING
-    [SerializeField] private int numDecksTEMP; 
+    [SerializeField] private int numDecksTEMP;
 
     //handles selecting a stack - if already have a stack selected, then either deselects or replaces.
     //currently the only way to know what stack is selected is to look at the console :)
@@ -37,7 +37,15 @@ public class StackManagerScript : MonoBehaviour
 
     //TO DO
     //4) Make it so that clicking on a blank point of the screen deselects the stack you have selected
-    
+
+    /*
+    void Update()
+    {
+        if (Input.GetKey(KeyCode.Mouse0) && ) {
+
+        }
+    } */
+
     //NETWORK PROOF I THINK. I DON'T THINK ANY OF THIS CODE HAS TO BE ON THE NETWORK ACTUALLY SO THAT'S COOL
     public bool selectStack (GameObject selectedStack) {
         //ulong stackNetworkID = selectedStack.GetComponent<NetworkObject>().NetworkObjectId; //don't actually have to use this i think
@@ -60,7 +68,6 @@ public class StackManagerScript : MonoBehaviour
 
         } else if (stackSelected && currentStack != selectedStack) { //should handle transferring cards
 
-            //TODO: Update to network
             //should handle deciding if one can transfer cards.
             
             //if tranfer is possible: transfer, but do not change selection. 
@@ -202,7 +209,11 @@ public class StackManagerScript : MonoBehaviour
             }
 
             //rotates back
-            table.transform.rotation = zeroRot;
+            //table.transform.rotation = zeroRot;
+            
+            /*Vector3 tablePosition = table.transform.position;
+            tablePosition.z -= 1;
+            table.transform.SetPositionAndRotation(tablePosition, zeroRot);*/
         }
 
         
@@ -237,8 +248,10 @@ public class StackManagerScript : MonoBehaviour
     //resets selection so that no stack is currently selected
     public void deselectStack () {
         stackSelected = false;
-        currentStack.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1); //resets color of deselected stack to white
-        currentStack = null;
+        if (currentStack != null) {
+            currentStack.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1); //resets color of deselected stack to white
+            currentStack = null;
+        }
     }
 
     //transfer 3 cards from the deck to the acceptor pile. if there are no cards left, transfer back to deck from acceptor. 

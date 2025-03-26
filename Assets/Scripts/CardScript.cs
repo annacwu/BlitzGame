@@ -17,6 +17,7 @@ public class CardScript : NetworkBehaviour
     public StackScript.CardValues thisCard;
 
     private int cardSortingOrder;
+
     
     
     // Start is called before the first frame update

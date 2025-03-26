@@ -21,6 +21,8 @@ public class TableScript : NetworkBehaviour
     //should check to see if one can create a new stack in the middle
     void OnMouseDown() {
 
+        Debug.Log("HelloThisIsTheTableWhyAreYouKnocking");
+
         StackManagerScript managerScript = StackManager.GetComponent<StackManagerScript>();
         
         //if nothing is selected, do nothing

@@ -9,6 +9,7 @@ using Unity.Properties;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering.RenderGraphModule;
+using UnityEngine.InputSystem;
 
 public class StackScript : NetworkBehaviour
 {   
@@ -69,6 +70,16 @@ public class StackScript : NetworkBehaviour
     void Start()
     {
         smanager = GameObject.FindWithTag("StackManager").GetComponent<StackManagerScript>();
+        
+        //sorting order (theoretically) allows stack itself to always be clickable
+        gameObject.GetComponent<SpriteRenderer>().sortingOrder = 100;
+        
+        //makes sure sprite is properly set
+        if (numCards == 0) {
+            gameObject.GetComponent<SpriteRenderer>().color = Color.white;
+        } else {
+            gameObject.GetComponent<SpriteRenderer>().color = Color.clear; 
+        }
         //.GetComponent<StackManagerScript>();
         //instantiate cards in the stack (they should be networkobjects, but maybe we can deal with that later?)
     }
@@ -78,6 +89,13 @@ public class StackScript : NetworkBehaviour
     //{
     //    
     //}
+
+     //should call selectStack in the stackmanager
+    //when you click on a stack
+    void OnMouseDown() {
+        Debug.Log("StackSelected");
+        selectThisStack();
+    }
 
 
     //calls selectStack in the stackmanager.
@@ -99,6 +117,7 @@ public class StackScript : NetworkBehaviour
     public void addCard (int value, Color color, string face) {
         //sets sorting order networkvariable to ensure cards are displayed right
         spawnCardRpc(value, color, face);
+        gameObject.GetComponent<SpriteRenderer>().color = Color.clear; //makes the sprite transparent
         numCards++;
     }
 
@@ -119,6 +138,10 @@ public class StackScript : NetworkBehaviour
             
             removeCardRpc(this.NetworkObjectId);
             numCards--;
+        }
+
+        if (numCards == 0) {
+            gameObject.GetComponent<SpriteRenderer>().color = Color.white; //makes the sprite untransparent
         }
         
     }
