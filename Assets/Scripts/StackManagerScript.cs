@@ -27,6 +27,7 @@ public class StackManagerScript : MonoBehaviour
     [SerializeField] private GameObject spawnSystem;
     [SerializeField] private GameObject tablePrefab;
     [SerializeField] private GameObject BButtonPrefab;
+    [SerializeField] private int mult;
 
     //NUMBER OF DECKS TO SPAWN, SHOULD BE REPLACED BY AUTOMATIC DETERMINATION OF HOW MANY PLAYERS ARE PLAYING
     [SerializeField] private int numDecksTEMP;
@@ -136,7 +137,7 @@ public class StackManagerScript : MonoBehaviour
         for (int i = 0; i < numDecksTEMP; i++) {
             //computes where decks should go (TEMP)
             //Vector3 location = spawnSystem.transform.GetChild(i).transform.position;
-            Vector3 zeroPos = new Vector3(0, -45, 0); //position of spawnpoint 1
+            Vector3 zeroPos = new Vector3(0, -45 * mult, 0); //position of spawnpoint 1
 
             Quaternion rotation = spawnSystem.transform.GetChild(i).transform.rotation;
             Quaternion zeroRot = new Quaternion(0, 0, 0, 0);
@@ -148,10 +149,11 @@ public class StackManagerScript : MonoBehaviour
             //table.transform.position = zeroPos;
 
             Vector3 deckPos = zeroPos; //position where we should spawn the deck (below the other cards, slightly left so u can flip cards to the right)
-            deckPos.x -= 10; //horizontal offset
-            deckPos.y -= 20; //vertical offset
+            deckPos.x -= 10 * mult; //horizontal offset
+            deckPos.y -= 20 * mult; //vertical offset
+            deckPos.z = -1; //closer to cam, so that collider triggers first
             Vector3 firstCardPos = zeroPos; //position where we should spawn the deck of 10 cards
-            firstCardPos.x += 30;
+            firstCardPos.x += 30 * mult;
 
             //spawns decks
             GameObject newDeck = Instantiate(stackPrefab, deckPos, zeroRot, table.transform); //this is a template position - ideally, we'd use the position + rotation of the player
@@ -167,7 +169,7 @@ public class StackManagerScript : MonoBehaviour
             newDeck.GetComponent<StackScript>().faceOtherWay();
 
             //instantiates acceptor pile
-            deckPos.x += 20;
+            deckPos.x += 20 * mult;
             GameObject newAcceptorPile = Instantiate(stackPrefab, deckPos, zeroRot, table.transform);
             var newAcceptorPileNetworkObject = newAcceptorPile.GetComponent<NetworkObject>();
             newAcceptorPileNetworkObject.Spawn(true);
@@ -176,7 +178,7 @@ public class StackManagerScript : MonoBehaviour
             newAcceptorPile.GetComponent<StackScript>().canTransfer.Value = true;
 
             //spawns blitz button
-            deckPos.x += 20;
+            deckPos.x += 20 * mult;
             GameObject blitzButton = Instantiate(BButtonPrefab, deckPos, zeroRot, table.transform);
             var blitzButtonNetworkObject = blitzButton.GetComponent<NetworkObject>();
             blitzButtonNetworkObject.Spawn(true);
@@ -198,7 +200,7 @@ public class StackManagerScript : MonoBehaviour
 
             //sets up the three other stacks
             for (int j = 0; j < 3; j++) {
-                firstCardPos.x -= 20;
+                firstCardPos.x -= 20 * mult;
                 GameObject newStack = Instantiate(stackPrefab, firstCardPos, zeroRot, table.transform);
                 var newStackNetworkObject = newStack.GetComponent<NetworkObject>();
                 newStackNetworkObject.Spawn(true);
@@ -209,7 +211,7 @@ public class StackManagerScript : MonoBehaviour
             }
 
             //rotates back
-            //table.transform.rotation = zeroRot;
+            table.transform.rotation = zeroRot;
             
             /*Vector3 tablePosition = table.transform.position;
             tablePosition.z -= 1;

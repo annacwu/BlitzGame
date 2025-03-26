@@ -6,13 +6,16 @@ using UnityEngine.UI;
 
 public class NetworkManagerUI : MonoBehaviour
 {
-    
+    public static NetworkManagerUI Instance { get; private set; }
+    [SerializeField] private GameObject networkUIPanel;
     [SerializeField] private Button serverButton;
     [SerializeField] private Button hostButton;
     [SerializeField] private Button clientButton;
     [SerializeField] private PlayerSpawnSystem playerSpawnSystem;
 
     private void Awake(){
+
+        Instance = this;
 
         serverButton.onClick.AddListener(() => {
             NetworkManager.Singleton.StartServer();
@@ -29,5 +32,9 @@ public class NetworkManagerUI : MonoBehaviour
         clientButton.onClick.AddListener(() => {
             NetworkManager.Singleton.StartClient(); // something i don't understand is why client stuff works SEEMS LIKE IT DOESNT ACTUALLY
         });
+    }
+
+    public void Show(){
+        networkUIPanel.SetActive(true);
     }
 }
