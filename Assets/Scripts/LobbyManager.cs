@@ -5,8 +5,10 @@ using Unity.Services.Core;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using Unity.Netcode;
 
-public class LobbyManager : MonoBehaviour
+public class LobbyManager : NetworkBehaviour
 {
     public static LobbyManager Instance { get; private set; }
 
@@ -169,4 +171,12 @@ public class LobbyManager : MonoBehaviour
             Debug.Log(e);
         }
     }
+
+    //moves everyone from the lobby to the MainGameScene
+    //[Rpc(SendTo.Everyone)]
+    public void moveToGameRpc () {
+        Debug.Log("MovingOn");
+        SceneManager.LoadScene("MainGameScene");
+    }
+
 }
