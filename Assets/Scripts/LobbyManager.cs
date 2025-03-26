@@ -173,10 +173,11 @@ public class LobbyManager : NetworkBehaviour
     }
 
     //moves everyone from the lobby to the MainGameScene
-    //[Rpc(SendTo.Everyone)]
-    public void moveToGameRpc () {
+    public void MoveToGame() {
         Debug.Log("MovingOn");
-        SceneManager.LoadScene("MainGameScene");
+        if (IsHost){
+            NetworkManager.SceneManager.LoadScene("MainGameScene", LoadSceneMode.Single);
+        }
     }
 
 }

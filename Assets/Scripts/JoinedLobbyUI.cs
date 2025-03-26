@@ -31,7 +31,7 @@ public class JoinedLobbyUI : MonoBehaviour
         joinedLobbyPanel.SetActive(false);
         leaveButton.onClick.AddListener(LeaveButtonClicked);
         refreshButton.onClick.AddListener(UpdateJoinedPlayers);
-        // startButton.onClick.AddListener(StartGame);
+        startButton.onClick.AddListener(StartButtonClicked);
     }
 
     public void Show(string lobId, string lobName) {
@@ -71,5 +71,9 @@ public class JoinedLobbyUI : MonoBehaviour
             GameObject playerItem = Instantiate(playerListPrefab, playerListContainer.transform);
             playerItem.GetComponentInChildren<TextMeshProUGUI>().text = $"{player.Id}";
         }
+    }
+
+    private void StartButtonClicked(){
+        LobbyManager.Instance.MoveToGame();
     }
 }
