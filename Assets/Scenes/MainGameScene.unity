@@ -209,13 +209,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selectedColor: {r: 0, g: 0, b: 0, a: 0}
-  stackPrefab: {fileID: 5234375499342486173, guid: c1f7fe6136df84c48be47dfa6e947a7b,
-    type: 3}
+  stackPrefab: {fileID: 5234375499342486173, guid: c1f7fe6136df84c48be47dfa6e947a7b, type: 3}
   spawnSystem: {fileID: 832053210}
-  tablePrefab: {fileID: 5584142126847178136, guid: 334f0cebd1ced4402b8933edb043abaa,
-    type: 3}
-  BButtonPrefab: {fileID: 381340231633914024, guid: e2350ad10b4e5364caa7ff2512fc2d7e,
-    type: 3}
+  tablePrefab: {fileID: 5584142126847178136, guid: 334f0cebd1ced4402b8933edb043abaa, type: 3}
+  BButtonPrefab: {fileID: 381340231633914024, guid: e2350ad10b4e5364caa7ff2512fc2d7e, type: 3}
   mult: 10
   numDecksTEMP: 4
 --- !u!4 &373361820
@@ -267,10 +264,10 @@ RectTransform:
   - {fileID: 2040213372}
   m_Father: {fileID: 1961891328}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 407.46588, y: 183}
-  m_SizeDelta: {x: 58.2787, y: 30}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -91, y: -56}
+  m_SizeDelta: {x: 58.278687, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &554339394
 MonoBehaviour:
@@ -861,8 +858,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6,
-    type: 3}
+  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -959,8 +955,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6,
-    type: 3}
+  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -1328,8 +1323,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6,
-    type: 3}
+  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -2069,8 +2063,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6,
-    type: 3}
+  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -2974,10 +2967,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d25972e9cbd624333a65d9dc73ce697a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 7474896340404332634, guid: fbcf3af815c434f4b832bd0250069cfb,
-    type: 3}
-  tableObject: {fileID: 5584142126847178136, guid: 334f0cebd1ced4402b8933edb043abaa,
-    type: 3}
+  playerPrefab: {fileID: 7474896340404332634, guid: fbcf3af815c434f4b832bd0250069cfb, type: 3}
+  tableObject: {fileID: 5584142126847178136, guid: 334f0cebd1ced4402b8933edb043abaa, type: 3}
 --- !u!4 &3471192689173851396
 Transform:
   m_ObjectHideFlags: 0
