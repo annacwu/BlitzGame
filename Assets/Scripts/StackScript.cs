@@ -10,6 +10,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering.RenderGraphModule;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements.Experimental;
 
 public class StackScript : NetworkBehaviour
 {   
@@ -35,6 +36,9 @@ public class StackScript : NetworkBehaviour
     //a comment 
 
     private int numCards = 0; //counts # of cards in the linked list
+    [SerializeField] private GameObject outline;
+
+    //private int tick = 0;
 
     //private NetworkVariable<int> sortOrder = new(0); //stores what sorting order the next card should have
 
@@ -91,10 +95,22 @@ public class StackScript : NetworkBehaviour
     //}
 
      //should call selectStack in the stackmanager
+    
     //when you click on a stack
     void OnMouseDown() {
         Debug.Log("StackSelected");
         selectThisStack();
+    }
+    
+    //add outline to stack
+    void OnMouseEnter() {
+        //Debug.Log("are u mousing over me :3");
+        outline.SetActive(true);
+    }
+
+    //remove outline from stack
+    void OnMouseExit() {
+        outline.SetActive(false);
     }
 
 
