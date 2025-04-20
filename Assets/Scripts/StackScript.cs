@@ -23,14 +23,14 @@ public class StackScript : NetworkBehaviour
 
     //public bool isAcceptorPile = false; //acceptor pile denotes the stack that accepts 3 cards at a time from the deck
 
-    private bool selected = false; //determines whether the stack has been clicked once (e.g to move a card)
+    public bool selected = false; //determines whether the stack has been clicked once (e.g to move a card)
     private StackManagerScript smanager;
     public GameObject cardPrefab;
     [SerializeField] public bool isDeck = false; //decks start with a full deck of cards, which is shuffled automatically. Decks are spawned in when the game starts, & handle the whole doling out cards thing.
-    public bool isAcceptorPile = false;
-    public bool canAcceptCards = true;
+    public bool isAcceptorPile = false; //only true for acceptor pile
+    public bool canAcceptCards = true; //only false for acceptor pile, deck, and stack of 10
 
-    public NetworkVariable<bool> canTransfer = new(true); //you cannot transfer from the main deck, or from stacks placed in the middle. 
+    public NetworkVariable<bool> canTransfer = new(true); //only false for decks and newly created center decks
 
    // private bool canAcceptCards; //decks and the stack of 10 cards cannot accept any cards. This variable will be set when a stack is created. 
     //a comment 
@@ -98,7 +98,7 @@ public class StackScript : NetworkBehaviour
     
     //when you click on a stack
     void OnMouseDown() {
-        Debug.Log("StackSelected");
+        //Debug.Log("StackSelected");
         selectThisStack();
     }
     
@@ -110,7 +110,14 @@ public class StackScript : NetworkBehaviour
 
     //remove outline from stack
     void OnMouseExit() {
-        outline.SetActive(false);
+        if (!selected) {
+            outline.SetActive(false);
+        }
+        
+    }
+
+    public void toggleOutline (bool show) {
+        outline.SetActive(show);
     }
 
 
@@ -118,7 +125,7 @@ public class StackScript : NetworkBehaviour
     //doesn't need to be on network bc local. 
     public void selectThisStack () {
         //Debug.Log("Trying to select a stack - StackScript");
-        selected = smanager.selectStack(gameObject);
+        smanager.selectStack(gameObject);
     }
 
     //NOT NETWORK READY (but does it have to be network ready idk man)

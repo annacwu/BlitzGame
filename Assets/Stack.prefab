@@ -880,6 +880,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   faceUpSprite: {fileID: 21300000, guid: e5a64dcbedf84994ab1eb813ad5eb3a5, type: 3}
   faceDownSprite: {fileID: 21300000, guid: 5fb92f810a1258d4193496f9302a5125, type: 3}
+  selected: 0
   cardPrefab: {fileID: 3581826042978022473, guid: 20d7c59dc61d64eaf910ba569a3e8279, type: 3}
   isDeck: 0
   isAcceptorPile: 0

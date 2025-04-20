@@ -131,6 +131,8 @@ public class LobbyManager : NetworkBehaviour
         try {
             var lobby = await Lobbies.Instance.JoinLobbyByIdAsync(lobbyId);
             Debug.Log("Joined lobby with ID: " + lobbyId);
+
+            NetworkManager.Singleton.StartClient(); // THIS IS BREAKING IT BTW
         
             JoinedLobbyUI.Instance.UpdateJoinedPlayers();
         } catch (LobbyServiceException e) {

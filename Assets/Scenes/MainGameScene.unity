@@ -208,11 +208,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4bed19129eebf64cbb64d7934d1ff2b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedColor: {r: 0, g: 0, b: 0, a: 0}
   stackPrefab: {fileID: 5234375499342486173, guid: c1f7fe6136df84c48be47dfa6e947a7b, type: 3}
   spawnSystem: {fileID: 832053210}
   tablePrefab: {fileID: 5584142126847178136, guid: 334f0cebd1ced4402b8933edb043abaa, type: 3}
-  BButtonPrefab: {fileID: 381340231633914024, guid: e2350ad10b4e5364caa7ff2512fc2d7e, type: 3}
+  BButtonPrefab: {fileID: 3382085942334359254, guid: 747c53dca9087b043b1317f91af5213b, type: 3}
   mult: 10
   numDecksTEMP: 4
 --- !u!4 &373361820

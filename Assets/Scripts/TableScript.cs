@@ -37,11 +37,8 @@ public class TableScript : NetworkBehaviour
         if (topCard == null || currentStack.GetComponent<StackScript>().canTransfer.Value == false) 
         {
             managerScript.deselectStack();
-            return;
-        }
-
-        //if value is 1, then we can create a new stack
-        if (topCard.value == 1) {
+            //return;
+        } else if (topCard.value == 1) {
             
             
             if (Mouse.current == null){

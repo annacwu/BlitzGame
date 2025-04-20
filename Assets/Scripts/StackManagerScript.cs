@@ -6,7 +6,7 @@ using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
+using UnityEngine.UI;
 
 /// <summary>
 /// this object handles the logic behind stacks & transferring cards between stacks
@@ -22,7 +22,7 @@ public class StackManagerScript : MonoBehaviour
     private bool stackSelected = false;
     private GameObject currentStack;
 
-    [SerializeField] private Color selectedColor;
+    private Color selectedColor = Color.blue;
     [SerializeField] private GameObject stackPrefab;
     [SerializeField] private GameObject spawnSystem;
     [SerializeField] private GameObject tablePrefab;
@@ -36,17 +36,86 @@ public class StackManagerScript : MonoBehaviour
     //currently the only way to know what stack is selected is to look at the console :)
     //returns stackSelected so that the stack knows whether it is selected or not
 
-    //TO DO
-    //4) Make it so that clicking on a blank point of the screen deselects the stack you have selected
-
-    /*
-    void Update()
-    {
-        if (Input.GetKey(KeyCode.Mouse0) && ) {
-
+    //TO ADD: pressing escape (or other key but i think escape is good) should DESELECT whatever stack u had selected
+    public void selectStack (GameObject clickedStack) {
+        
+        //otherwise preScript would be null
+        StackScript preScript = null;
+        if (stackSelected) {
+            preScript = currentStack.GetComponent<StackScript>();
         }
-    } */
+        StackScript postScript = clickedStack.GetComponent<StackScript>();
 
+        //if same, just deselect
+        if (clickedStack == currentStack) {
+            Debug.Log("No transfer possible: same stack");
+            deselectStack();
+            return;
+        }
+
+        if (!stackSelected && postScript.canTransfer.Value && postScript.getTopCard() != null) {
+            //if no stack selected, select the clicked stack, so long as one can transfer from it.
+            Debug.Log("Selected new stack!");
+            stackSelected = true;
+            currentStack = clickedStack;
+            currentStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = selectedColor;
+            currentStack.GetComponent<StackScript>().toggleOutline(true);
+            postScript.selected = true;
+            return;
+        }
+
+        
+        if (stackSelected && !postScript.canTransfer.Value && !postScript.canAcceptCards) {
+            Debug.Log("No transfer possible: new stack cannot accept or give cards!");
+            deselectStack();
+        } else if (stackSelected && !postScript.canAcceptCards) {
+            Debug.Log("No transfer possible: new stack cannot accept cards!");
+            currentStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.white;
+            preScript.toggleOutline(false);
+            preScript.selected = false;
+
+            currentStack = clickedStack;
+            postScript.selected = true;
+            currentStack.GetComponent<StackScript>().toggleOutline(true);
+            currentStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = selectedColor;
+            return;
+        } else if (stackSelected) {
+            //main meat of this whole thing
+            StackScript.CardValues preCard = preScript.getTopCard();
+            StackScript.CardValues postCard = postScript.getTopCard();
+            if (postCard == null) {
+                Debug.Log("Card transferred (to empty stack)");
+                //transfer. empty stacks can accept anything
+                postScript.addCard(preCard.value, preCard.color, preCard.face);
+                preScript.removeTopCard();
+                deselectStack();
+            } else if (preCard.value == postCard.value + 1 && preCard.color == postCard.color) {
+                Debug.Log("Card transferred (normal conditions)");
+                postScript.addCard(preCard.value, preCard.color, preCard.face);
+                preScript.removeTopCard();
+                deselectStack();
+                //transfer
+            } else {
+                if (postScript.canTransfer.Value) {
+                    Debug.Log("No transfer possible: value or color conditions not met!");
+                    currentStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.white;
+                    currentStack.GetComponent<StackScript>().toggleOutline(false);
+                    preScript.selected = false;
+                    currentStack = clickedStack;
+                    postScript.selected = true;
+                    currentStack.GetComponent<StackScript>().toggleOutline(true);
+                    currentStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = selectedColor;
+                } else {
+                    deselectStack();
+                }
+                
+            }
+        }
+
+    }
+
+    //commented out previous selection function
+    /*
     //NETWORK PROOF I THINK. I DON'T THINK ANY OF THIS CODE HAS TO BE ON THE NETWORK ACTUALLY SO THAT'S COOL
     public bool selectStack (GameObject selectedStack) {
         //ulong stackNetworkID = selectedStack.GetComponent<NetworkObject>().NetworkObjectId; //don't actually have to use this i think
@@ -55,7 +124,7 @@ public class StackManagerScript : MonoBehaviour
         if (!stackSelected) {
             stackSelected = true;
             currentStack = selectedStack;
-            selectedStack.GetComponent<SpriteRenderer>().color = selectedColor; //sets color of selected stack to whatever the color is
+            selectedStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = selectedColor; //sets color of selected stack to whatever the color is
 
             return stackSelected;
 
@@ -64,7 +133,7 @@ public class StackManagerScript : MonoBehaviour
 
             stackSelected = false;
             currentStack = null;
-            selectedStack.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1); //resets color of deselected stack to white
+            selectedStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.white;
             return stackSelected;
 
         } else if (stackSelected && currentStack != selectedStack) { //should handle transferring cards
@@ -122,7 +191,7 @@ public class StackManagerScript : MonoBehaviour
             }
         }
         return false;
-    }
+    } */
 
     //spawns cards in a configuration for the start of the game
     //CAN ONLY BE RUN ON THE SERVER. we can either fix this down the line or make it a feature (which i think makes sense anyways)
@@ -164,7 +233,7 @@ public class StackManagerScript : MonoBehaviour
             createFullDeck(newDeck, "template face"); //moving this line of code down fixed a bunch of errors I was getting and I have no idea why :)
             newDeck.GetComponent<StackScript>().shuffle();
             newDeck.GetComponent<StackScript>().isDeck = true;
-            newDeck.GetComponent<StackScript>().canTransfer.Value = true;
+            newDeck.GetComponent<StackScript>().canTransfer.Value = false;
             newDeck.GetComponent<StackScript>().canAcceptCards = false;
             newDeck.GetComponent<StackScript>().faceOtherWay();
 
@@ -175,14 +244,16 @@ public class StackManagerScript : MonoBehaviour
             newAcceptorPileNetworkObject.Spawn(true);
             newAcceptorPileNetworkObject.transform.parent = table.transform; //fixes the parent issue >?>?>?
             newAcceptorPile.GetComponent<StackScript>().isAcceptorPile = true;
+            newAcceptorPile.GetComponent<StackScript>().canAcceptCards = false;
             newAcceptorPile.GetComponent<StackScript>().canTransfer.Value = true;
 
             //spawns blitz button
-            deckPos.x += 20 * mult;
+            deckPos.x += (20 * mult);
             GameObject blitzButton = Instantiate(BButtonPrefab, deckPos, zeroRot, table.transform);
             var blitzButtonNetworkObject = blitzButton.GetComponent<NetworkObject>();
             blitzButtonNetworkObject.Spawn(true);
             blitzButtonNetworkObject.transform.SetParent(table.transform);
+            blitzButton.transform.GetChild(0).transform.GetChild(0).GetComponent<Button>().onClick.AddListener(doSomething);
             //sets up game
 
             //sets up the stack of 10
@@ -225,6 +296,10 @@ public class StackManagerScript : MonoBehaviour
         //4. repeat for each player
     }
 
+    private void doSomething () {
+        Debug.Log("Did something");
+    }
+
     //adds 1 card of each color / value combo to make a full deck. since faces aren't implemented yet that's mostly just a placeholder. 
     private void createFullDeck (GameObject deck, string face) {
         Color[] colors = {Color.blue, Color.green, Color.yellow, Color.red};
@@ -251,7 +326,9 @@ public class StackManagerScript : MonoBehaviour
     public void deselectStack () {
         stackSelected = false;
         if (currentStack != null) {
-            currentStack.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1); //resets color of deselected stack to white
+            currentStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.white;
+            currentStack.GetComponent<StackScript>().toggleOutline(false);
+            currentStack.GetComponent<StackScript>().selected = false;
             currentStack = null;
         }
     }
