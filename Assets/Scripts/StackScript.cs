@@ -19,7 +19,7 @@ public class StackScript : NetworkBehaviour
     [SerializeField] private Sprite faceDownSprite;
     
     //track which way a stack is facing
-    private NetworkVariable<bool> isFacingUp = new(true);
+    public NetworkVariable<bool> isFacingUp = new(true);
 
     //public bool isAcceptorPile = false; //acceptor pile denotes the stack that accepts 3 cards at a time from the deck
 
@@ -34,6 +34,8 @@ public class StackScript : NetworkBehaviour
 
    // private bool canAcceptCards; //decks and the stack of 10 cards cannot accept any cards. This variable will be set when a stack is created. 
     //a comment 
+
+    public NetworkVariable<bool> isEmpty = new(false);
 
     private int numCards = 0; //counts # of cards in the linked list
     [SerializeField] private GameObject outline;
@@ -78,11 +80,14 @@ public class StackScript : NetworkBehaviour
         //sorting order (theoretically) allows stack itself to always be clickable
         gameObject.GetComponent<SpriteRenderer>().sortingOrder = 100;
         
-        //makes sure sprite is properly set
-        if (numCards == 0) {
-            gameObject.GetComponent<SpriteRenderer>().color = Color.white;
+        //makes sure sprite is properly set NOT NETWORK COMPATIBLE YET hold the phone
+        if (isEmpty.Value == true) {
+            //gameObject.GetComponent<SpriteRenderer>().color = Color.white;
+            Debug.Log("white");
+            setSpriteColorRpc(Color.white);
         } else {
-            gameObject.GetComponent<SpriteRenderer>().color = Color.clear; 
+            //gameObject.GetComponent<SpriteRenderer>().color = Color.clear; 
+            setSpriteColorRpc(Color.clear);
         }
         //.GetComponent<StackManagerScript>();
         //instantiate cards in the stack (they should be networkobjects, but maybe we can deal with that later?)
@@ -140,8 +145,10 @@ public class StackScript : NetworkBehaviour
     public void addCard (int value, Color color, string face) {
         //sets sorting order networkvariable to ensure cards are displayed right
         spawnCardRpc(value, color, face);
-        gameObject.GetComponent<SpriteRenderer>().color = Color.clear; //makes the sprite transparent
+        //gameObject.GetComponent<SpriteRenderer>().color = Color.clear; //makes the sprite transparent
+        setSpriteColorRpc(Color.clear);
         numCards++;
+        isEmpty.Value = false;
     }
 
     //take top card, put it somewhere else?
@@ -164,7 +171,9 @@ public class StackScript : NetworkBehaviour
         }
 
         if (numCards == 0) {
-            gameObject.GetComponent<SpriteRenderer>().color = Color.white; //makes the sprite untransparent
+            //gameObject.GetComponent<SpriteRenderer>().color = Color.white; //makes the sprite untransparent
+            isEmpty.Value = true;
+            setSpriteColorRpc(Color.white);
         }
         
     }
@@ -185,6 +194,12 @@ public class StackScript : NetworkBehaviour
     public void shuffle () {
         shuffleRpc();
         reload();
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void setSpriteColorRpc (Color sColor) {
+        this.GetComponent<NetworkObject>().GetComponent<SpriteRenderer>().color = sColor;
+        Debug.Log("Setting color" + sColor + "at numCards: " + numCards);
     }
 
     [Rpc(SendTo.Everyone)]
@@ -265,7 +280,9 @@ public class StackScript : NetworkBehaviour
         return isDeck;
     }
 
-    //NOT ON NETWORK
+    //NOT ON NETWORK. ONly HOST CAN CALL BC EDITS NETWORKVARIABLE (which apparently only the host can do)
+    //I have not yet determined if this is a problem to be fixed but either way BE AWARE OF THIS LIMITATION
+    //also note: currently on start does not set the right colors. idk exactly why but that DOES need to be fixed
     public void faceOtherWay () {
 
         //handles changing visuals so you can / can't see cards. 
@@ -275,10 +292,12 @@ public class StackScript : NetworkBehaviour
             isFacingUp.Value = false;
             //canTransfer.Value = false; //facedown decks should not be able to transfer cards. 
             deckOrderRpc(gameObject.GetComponent<NetworkObject>().NetworkObjectId, true);
+            setSpriteColorRpc(Color.white);
         } else {
             isFacingUp.Value = true;
             //canTransfer.Value = true;
             deckOrderRpc(gameObject.GetComponent<NetworkObject>().NetworkObjectId, false);
+            setSpriteColorRpc(Color.clear);
         }
 
         LinkedListNode<CardValues> currentNode = cards.First;
