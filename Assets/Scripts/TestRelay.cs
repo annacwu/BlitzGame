@@ -20,24 +20,6 @@ public class TestRelay : MonoBehaviour
         testRelayButton.onClick.AddListener(OnTestRelayButtonClicked);
     }
 
-    // private async Task CreateRelay() {
-    //     try {
-    //         // 3 is 3 people plus host -- CHANGE THIS LATER
-    //         Allocation allocation = await RelayService.Instance.CreateAllocationAsync(3);
-
-    //         string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
-    //         Debug.Log(joinCode);
-
-    //         RelayServerData relayServerData = new RelayServerData(allocation, "dtls");
-    //         relayServerData.RelayJoinCode = joinCode;
-    //         NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
-
-    //         NetworkManager.Singleton.StartHost();
-    //     } catch (RelayServiceException e) {
-    //         Debug.Log(e);
-    //     }
-       
-    // }
     public async Task<string> StartHostWithRelay(int maxConnections, string connectionType)
     {
         await UnityServices.InitializeAsync();
