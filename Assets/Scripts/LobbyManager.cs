@@ -77,7 +77,7 @@ public class LobbyManager : NetworkBehaviour
     private async void ListLobbies() {
         try {
             // lists ALL lobbies active ever
-            QueryResponse queryResponse = await Lobbies.Instance.QueryLobbiesAsync();
+            QueryResponse queryResponse = await LobbyService.Instance.QueryLobbiesAsync();
 
             Debug.Log("Lobbies found: " + queryResponse.Results.Count);
             foreach (Lobby lobby in queryResponse.Results) {
@@ -108,7 +108,7 @@ public class LobbyManager : NetworkBehaviour
                     field: QueryOrder.FieldOptions.Created)
             };
 
-            QueryResponse lobbyListQueryResponse = await Lobbies.Instance.QueryLobbiesAsync();
+            QueryResponse lobbyListQueryResponse = await LobbyService.Instance.QueryLobbiesAsync();
 
             OnLobbyListChanged?.Invoke(this, new OnLobbyListChangedEventArgs { lobbyList = lobbyListQueryResponse.Results });
         } catch (LobbyServiceException e) {
@@ -129,10 +129,10 @@ public class LobbyManager : NetworkBehaviour
     // THIS IS THE ONE WE'RE USING
     public async void JoinLobby(string lobbyId) {
         try {
-            var lobby = await Lobbies.Instance.JoinLobbyByIdAsync(lobbyId);
+            var lobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId);
             Debug.Log("Joined lobby with ID: " + lobbyId);
 
-            NetworkManager.Singleton.StartClient(); // THIS IS BREAKING IT BTW
+            // NetworkManager.Singleton.StartClient(); // THIS IS BREAKING IT BTW
         
             JoinedLobbyUI.Instance.UpdateJoinedPlayers();
         } catch (LobbyServiceException e) {
@@ -142,7 +142,7 @@ public class LobbyManager : NetworkBehaviour
 
     private async void JoinLobbyByCode(string lobbyCode) {
         try {
-            await Lobbies.Instance.JoinLobbyByCodeAsync(lobbyCode);
+            await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode);
             Debug.Log("Joined lobby by code " + lobbyCode);
         } catch (LobbyServiceException e) {
             Debug.Log(e);

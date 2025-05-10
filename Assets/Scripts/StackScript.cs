@@ -35,7 +35,8 @@ public class StackScript : NetworkBehaviour
    // private bool canAcceptCards; //decks and the stack of 10 cards cannot accept any cards. This variable will be set when a stack is created. 
     //a comment 
 
-    public NetworkVariable<bool> isEmpty = new(false);
+    public NetworkVariable<bool> isEmpty = new(false); //if there are no cards, this is true
+    public NetworkVariable<bool> isOnTable = new(false); //stacks instantiated by placing a 1 on the table will have this value set to true
 
     private int numCards = 0; //counts # of cards in the linked list
     [SerializeField] private GameObject outline;
@@ -72,18 +73,21 @@ public class StackScript : NetworkBehaviour
     //then, we can update it when the player moves cards around
     LinkedList<CardValues> cards = new LinkedList<CardValues>();
     // Start is called before the first frame update
-    
     void Start()
     {
         smanager = GameObject.FindWithTag("StackManager").GetComponent<StackManagerScript>();
-        
+    }
+
+    //i don't know what im doing :3
+    new public void OnNetworkSpawn()
+    {
         //sorting order (theoretically) allows stack itself to always be clickable
         gameObject.GetComponent<SpriteRenderer>().sortingOrder = 100;
         
         //makes sure sprite is properly set NOT NETWORK COMPATIBLE YET hold the phone
         if (isEmpty.Value == true) {
             //gameObject.GetComponent<SpriteRenderer>().color = Color.white;
-            Debug.Log("white");
+            //Debug.Log("white");
             setSpriteColorRpc(Color.white);
         } else {
             //gameObject.GetComponent<SpriteRenderer>().color = Color.clear; 
@@ -149,6 +153,20 @@ public class StackScript : NetworkBehaviour
         setSpriteColorRpc(Color.clear);
         numCards++;
         isEmpty.Value = false;
+
+        if (numCards == 10 && isOnTable.Value == true) {
+            //flips the deck over when the 10 is placed (bc no more cards can be placed)
+            //but waits a second so it's not instant
+            //ideally this would be an animation eventually
+            StartCoroutine(waitBeforeFlip(1));
+        }
+    }
+
+    //waits x amount of time, then flips deck over
+    //UNTESTED bc i would need more cards than i currently have access to
+    IEnumerator waitBeforeFlip (int waitTime) {
+        yield return new WaitForSeconds(waitTime);
+        faceOtherWay();
     }
 
     //take top card, put it somewhere else?
@@ -199,7 +217,7 @@ public class StackScript : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     public void setSpriteColorRpc (Color sColor) {
         this.GetComponent<NetworkObject>().GetComponent<SpriteRenderer>().color = sColor;
-        Debug.Log("Setting color" + sColor + "at numCards: " + numCards);
+        //Debug.Log("Setting color" + sColor + "at numCards: " + numCards);
     }
 
     [Rpc(SendTo.Everyone)]

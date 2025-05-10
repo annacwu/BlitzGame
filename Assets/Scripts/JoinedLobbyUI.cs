@@ -55,7 +55,7 @@ public class JoinedLobbyUI : MonoBehaviour
             Debug.LogError("cannot refresh players, no lobby id");
         }
         try{
-            var lobby = await Lobbies.Instance.GetLobbyAsync(currentLobbyId);
+            var lobby = await LobbyService.Instance.GetLobbyAsync(currentLobbyId);
             UpdatePlayerList(lobby.Players);
         } catch (LobbyServiceException e) {
             Debug.Log(e);

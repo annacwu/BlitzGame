@@ -48,7 +48,7 @@ public class TableScript : NetworkBehaviour
 
             //Vector3 mouseScreenLoc = Input.mousePosition; //old read, not sure why no workie
             Vector3 mouseScreenLoc = Mouse.current.position.ReadValue();
-            mouseScreenLoc.z = 10;
+            mouseScreenLoc.z = 70;
             Vector2 mouseRealLoc = Camera.main.ScreenToWorldPoint(mouseScreenLoc);
             //mouseRealLoc.z = 0;
 
@@ -81,6 +81,7 @@ public class TableScript : NetworkBehaviour
 
         newStack.GetComponent<StackScript>().addCard(value, color, face); //add new card to selected stack
         newStack.GetComponent<StackScript>().canTransfer.Value = false;
+        newStack.GetComponent<StackScript>().isOnTable.Value = true;
         
         //currentStack.GetComponent<StackScript>().removeTopCard();
     }

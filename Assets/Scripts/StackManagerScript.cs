@@ -247,14 +247,8 @@ public class StackManagerScript : MonoBehaviour
             newAcceptorPile.GetComponent<StackScript>().canAcceptCards = false;
             newAcceptorPile.GetComponent<StackScript>().canTransfer.Value = true;
 
-            //spawns blitz button
-            deckPos.x += (20 * mult);
-            GameObject blitzButton = Instantiate(BButtonPrefab, deckPos, zeroRot, table.transform);
-            var blitzButtonNetworkObject = blitzButton.GetComponent<NetworkObject>();
-            blitzButtonNetworkObject.Spawn(true);
-            blitzButtonNetworkObject.transform.SetParent(table.transform);
-            blitzButton.transform.GetChild(0).transform.GetChild(0).GetComponent<Button>().onClick.AddListener(doSomething);
-            //sets up game
+            //NO BLITZ BUTTON (instead make it a UI element on each player's screen. much easier don't have to mess around w/ spawning in 
+            //buttons which was hell)
 
             //sets up the stack of 10
             //zeroPos.x -= 20;
@@ -333,32 +327,5 @@ public class StackManagerScript : MonoBehaviour
         }
     }
 
-    //transfer 3 cards from the deck to the acceptor pile. if there are no cards left, transfer back to deck from acceptor. 
-    private void transferThree (GameObject deck, GameObject acceptor) {
-        StackScript dScript = deck.GetComponent<StackScript>();
-        StackScript aScript = acceptor.GetComponent<StackScript>();
-
-        StackScript.CardValues dTop = dScript.getTopCard();
-
-        for (int i = 0; i < 3; i++) {
-            if (dTop != null) {
-                aScript.addCard(dTop.value, dTop.color, dTop.face);
-                dScript.removeTopCard();
-                dTop = dScript.getTopCard();
-            } 
-        }
-    }
-
-    //put all cards in the acceptor pile back in the right order in the deck
-    private void resetAcceptor(GameObject acceptor, GameObject deck) {
-        StackScript aScript = acceptor.GetComponent<StackScript>();
-        StackScript dScript = deck.GetComponent<StackScript>();
-        StackScript.CardValues aTop = aScript.getTopCard();
-
-        while (aTop != null) {
-            dScript.addCard(aTop.value, aTop.color, aTop.face);
-            aScript.removeTopCard();
-            aTop = aScript.getTopCard();
-        }
-    }
+    
 }
