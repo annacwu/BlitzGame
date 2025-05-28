@@ -12,7 +12,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 
-public class TestRelay : MonoBehaviour
+public class RelayManager : MonoBehaviour
 {
     [SerializeField] private Button testRelayButton;
 
@@ -22,14 +22,18 @@ public class TestRelay : MonoBehaviour
 
     public async Task<string> StartHostWithRelay(int maxConnections, string connectionType)
     {
+        Debug.Log("starting initialize async");
         await UnityServices.InitializeAsync();
         if (!AuthenticationService.Instance.IsSignedIn)
         {
+            Debug.Log("singing in anon");
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
         }
+        Debug.Log("creating allocation async");
         var allocation = await RelayService.Instance.CreateAllocationAsync(maxConnections);
         NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, connectionType));
         var joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
+        Debug.Log("host started with relay");
         return NetworkManager.Singleton.StartHost() ? joinCode : null;
     }
 

@@ -34,8 +34,13 @@ public class LobbyManager : NetworkBehaviour
         AuthenticationService.Instance.SignedIn += () => {
             Debug.Log("Signed in " + AuthenticationService.Instance.PlayerId);
         };
-        // make it so user doesn't have to make an account to sign in through steam or something
-        await AuthenticationService.Instance.SignInAnonymouslyAsync();
+
+        if (!AuthenticationService.Instance.IsSignedIn)
+        {
+            // make it so user doesn't have to make an account to sign in through steam or something
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        }
+        
     }
 
     private void Update() {
