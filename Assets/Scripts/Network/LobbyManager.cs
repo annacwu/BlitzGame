@@ -7,13 +7,14 @@ using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Unity.Netcode;
+using System;
 
 public class LobbyManager : NetworkBehaviour
 {
     public static LobbyManager Instance { get; private set; }
 
     // i just learned what making an event was so this is that i think
-    public event System.EventHandler<OnLobbyListChangedEventArgs> OnLobbyListChanged;
+    public event EventHandler<OnLobbyListChangedEventArgs> OnLobbyListChanged;
     public class OnLobbyListChangedEventArgs : System.EventArgs {
         public List<Lobby> lobbyList;
     }
@@ -84,6 +85,45 @@ public class LobbyManager : NetworkBehaviour
             Debug.Log(e);
         }
     }
+
+    public async void CreateLobbyWithRelay(string lobbyName, int numPlayers) {
+        try {
+            int maxPlayers = numPlayers;
+
+            // Step 1: Start host with Relay and get the join code
+            string connectionType = "dtls"; // or "udp" if unencrypted
+            string joinCode = await RelayManager.Instance.StartHostWithRelay(maxPlayers - 1, connectionType); // minus 1 for host
+            Debug.Log("join code relay: " + joinCode);
+
+            // Step 2: Create lobby with the Relay join code in metadata
+            var options = new CreateLobbyOptions {
+                IsPrivate = false,
+                Data = new Dictionary<string, DataObject> {
+                    {
+                        "joinCode", new DataObject(
+                            DataObject.VisibilityOptions.Public,
+                            joinCode
+                        )
+                    }
+                }
+            };
+
+            Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
+
+            hostLobby = lobby;
+            Debug.Log($"Created Lobby '{lobby.Name}' with Relay. Max Players: {lobby.MaxPlayers}");
+            PrintPlayers(hostLobby);
+
+            // Immediately switch to the joined lobby screen since the player is already in this lobby
+            JoinedLobbyUI.Instance.Show(lobby.Id, lobby.Name);
+
+        } catch (LobbyServiceException e) {
+        Debug.LogError("LobbyServiceException: " + e);
+        } catch (Exception e) {
+            Debug.LogError("Unexpected Exception: " + e);
+        }
+    }
+
 
     // find lobbies with unity's API
     private async void ListLobbies() {

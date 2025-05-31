@@ -44,7 +44,7 @@ public class LobbyCreateUI : MonoBehaviour
 
         int numPlayers = int.Parse(numPlayersInput.options[numPlayersInput.value].text);
         // Call the LobbyManager to create a lobby had to make that one public
-        LobbyManager.Instance.CreateLobby(lobbyName, numPlayers);
+        LobbyManager.Instance.CreateLobbyWithRelay(lobbyName, numPlayers);
 
         // Hide the panel after creating the lobby
         Hide();
