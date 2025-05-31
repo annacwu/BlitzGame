@@ -16,7 +16,18 @@ public class RelayManager : MonoBehaviour
 {
     [SerializeField] private Button testRelayButton;
 
-    private void Awake() {
+    public static RelayManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
         testRelayButton.onClick.AddListener(OnTestRelayButtonClicked);
     }
 
@@ -36,7 +47,6 @@ public class RelayManager : MonoBehaviour
         Debug.Log("host started with relay");
         return NetworkManager.Singleton.StartHost() ? joinCode : null;
     }
-
 
 
     private async void JoinRelay(string joinCode) {
