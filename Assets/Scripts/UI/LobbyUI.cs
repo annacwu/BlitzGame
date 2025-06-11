@@ -23,7 +23,13 @@ public class LobbyUI : MonoBehaviour
         createLobbyButton.onClick.AddListener(CreateButtonClick);
     }
 
-    private void Start() {
+    // private void Update()
+    // {
+    //     RefreshButtonClick();
+    // }
+
+    private void Start()
+    {
         LobbyManager.Instance.OnLobbyListChanged += LobbyManager_OnLobbyListChanged;
     }
 
@@ -50,9 +56,12 @@ public class LobbyUI : MonoBehaviour
         }
 
         // Dynamically create UI elements for each lobby in the list
-        foreach (Lobby lobby in lobbyList) {
-            GameObject lobbyEntry = Instantiate(lobbyEntryPrefab, lobbyListContainer.transform);
-            lobbyEntry.GetComponentInChildren<TextMeshProUGUI>().text = $"{lobby.Name} ({lobby.MaxPlayers} players)";
+        foreach (Lobby lobby in lobbyList)
+        {
+            GameObject lobbyEntryObj = Instantiate(lobbyEntryPrefab, lobbyListContainer.transform);
+            lobbyEntryObj.GetComponentInChildren<TextMeshProUGUI>().text = $"{lobby.Name} ({lobby.MaxPlayers} players)";
+            LobbyEntry lobbyEntry = lobbyEntryObj.GetComponent<LobbyEntry>();
+            lobbyEntry.Setup(lobby);
         }
     }
 }

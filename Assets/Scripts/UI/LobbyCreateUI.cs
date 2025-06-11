@@ -16,7 +16,9 @@ public class LobbyCreateUI : MonoBehaviour
 
     private void Awake() {
         Instance = this;
+        Debug.Log("LobbyCreateUI Awake: " + GetInstanceID());
         createLobbyPanel.SetActive(false); // Hide the panel initially
+        createLobbyConfirmButton.onClick.RemoveAllListeners();
         createLobbyConfirmButton.onClick.AddListener(OnCreateLobbyConfirm);
         cancelButton.onClick.AddListener(Hide);
     }

@@ -21,24 +21,32 @@ public class MenuUI : MonoBehaviour
             // _ = OnCreateButtonClicked();
             OnCreateNewGamePressed();
         });
+        joinButton.onClick.AddListener(() =>
+        {
+            OnJoinGamePressed();
+        });
     }
-    
-    private async Task GoToLobbyScene() {
-        int maxConnections = 4;
-        string connectionType = "dtls";
-        if (NetworkManager.Singleton != null) {
-            Debug.Log("Starting relay host");
-            string joinCode = await relayManager.StartHostWithRelay(maxConnections, connectionType);
-            Debug.Log("host started with join code: " + joinCode);
-            if (NetworkManager.Singleton.SceneManager != null) {
-                Debug.Log("loading lobby scene");
-                NetworkManager.Singleton.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
-            } else {
-                Debug.Log("scene manager issue");
-            }
-        } else {
-            Debug.Log("network manager is null");
-        }    
+
+    // private async Task GoToLobbyScene() {
+    //     int maxConnections = 4;
+    //     string connectionType = "dtls";
+    //     if (NetworkManager.Singleton != null) {
+    //         Debug.Log("Starting relay host");
+    //         string joinCode = await relayManager.StartHostWithRelay(maxConnections, connectionType);
+    //         Debug.Log("host started with join code: " + joinCode);
+    //         if (NetworkManager.Singleton.SceneManager != null) {
+    //             Debug.Log("loading lobby scene");
+    //             NetworkManager.Singleton.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
+    //         } else {
+    //             Debug.Log("scene manager issue");
+    //         }
+    //     } else {
+    //         Debug.Log("network manager is null");
+    //     }    
+    // }
+    private void OnJoinGamePressed()
+    {
+        SceneManager.LoadScene("Lobby");
     }
 
     public void OnCreateNewGamePressed(){

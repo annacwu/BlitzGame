@@ -1490,7 +1490,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetSceneName: MainGameScene
-  relayManager: {fileID: 0}
+  relayManager: {fileID: 63981639}
+  lobbyManager: {fileID: 38359006}
 --- !u!4 &1770708605
 Transform:
   m_ObjectHideFlags: 0
@@ -1644,7 +1645,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   createButton: {fileID: 1060219237}
   joinButton: {fileID: 1311694376}
-  exitButton: {fileID: 0}
+  exitButton: {fileID: 592731156}
   relayManager: {fileID: 63981639}
 --- !u!1 &2050340332
 GameObject:

@@ -28,7 +28,7 @@ public class RelayManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        testRelayButton.onClick.AddListener(OnTestRelayButtonClicked);
+        // testRelayButton.onClick.AddListener(OnTestRelayButtonClicked);
     }
 
     public async Task<string> StartHostWithRelay(int maxConnections, string connectionType)
@@ -58,8 +58,21 @@ public class RelayManager : MonoBehaviour
         }
         
     }
-    private async void OnTestRelayButtonClicked()
+
+    public async Task<bool> StartClientWithRelay(string joinCode, string connectionType)
     {
-        await StartHostWithRelay(3, "dtls");
+        await UnityServices.InitializeAsync();
+        if (!AuthenticationService.Instance.IsSignedIn)
+        {
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        }
+
+        var allocation = await RelayService.Instance.JoinAllocationAsync(joinCode: joinCode);
+        NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, connectionType));
+        return !string.IsNullOrEmpty(joinCode) && NetworkManager.Singleton.StartClient();
     }
+    // private async void OnTestRelayButtonClicked()
+    // {
+    //     await StartHostWithRelay(3, "dtls");
+    // }
 }

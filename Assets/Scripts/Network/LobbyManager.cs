@@ -69,22 +69,22 @@ public class LobbyManager : NetworkBehaviour
         }
     }
 
-    public async void CreateLobby(string lobbyName, int numPlayers) {
-        try {
-            int maxPlayers = numPlayers;
-            Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers);
+    // public async void CreateLobby(string lobbyName, int numPlayers) {
+    //     try {
+    //         int maxPlayers = numPlayers;
+    //         Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers);
 
-            hostLobby = lobby;
-            Debug.Log("Created Lobby! " + lobby.Name + " " + lobby.MaxPlayers);
-            PrintPlayers(hostLobby);
+    //         hostLobby = lobby;
+    //         Debug.Log("Created Lobby! " + lobby.Name + " " + lobby.MaxPlayers);
+    //         PrintPlayers(hostLobby);
 
-            // Immediately switch to the joined lobby screen since the player is already in this lobby
-            JoinedLobbyUI.Instance.Show(lobby.Id, lobby.Name);
+    //         // Immediately switch to the joined lobby screen since the player is already in this lobby
+    //         JoinedLobbyUI.Instance.Show(lobby.Id, lobby.Name);
 
-        } catch (LobbyServiceException e) {
-            Debug.Log(e);
-        }
-    }
+    //     } catch (LobbyServiceException e) {
+    //         Debug.Log(e);
+    //     }
+    // }
 
     public async void CreateLobbyWithRelay(string lobbyName, int numPlayers) {
         try {
@@ -109,6 +109,7 @@ public class LobbyManager : NetworkBehaviour
             };
 
             Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
+            Debug.Log("Lobby metadata joinCode: " + lobby.Data["joinCode"].Value);
 
             hostLobby = lobby;
             Debug.Log($"Created Lobby '{lobby.Name}' with Relay. Max Players: {lobby.MaxPlayers}");
@@ -168,7 +169,7 @@ public class LobbyManager : NetworkBehaviour
         }
     }
 
-     // private async void JoinLobby() {
+    // private async void JoinLobby() {
     //     try {
     //         QueryResponse queryResponse = await Lobbies.Instance.QueryLobbiesAsync();
     //         // currently joins first one it finds
@@ -178,40 +179,89 @@ public class LobbyManager : NetworkBehaviour
     //     }
     // }
 
-    // THIS IS THE ONE WE'RE USING
-    public async void JoinLobby(string lobbyId) {
-        try {
-            var lobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId);
-            Debug.Log("Joined lobby with ID: " + lobbyId);
+    // // THIS IS THE ONE WE'RE USING
+    // public async void JoinLobby(string lobbyId) {
+    //     try {
+    //         var lobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId);
+    //         Debug.Log("Joined lobby with ID: " + lobbyId);
 
-            // NetworkManager.Singleton.StartClient(); // THIS IS BREAKING IT BTW
-        
-            JoinedLobbyUI.Instance.UpdateJoinedPlayers();
-        } catch (LobbyServiceException e) {
-         Debug.LogError("Failed to join lobby: " + e);
+    //         // NetworkManager.Singleton.StartClient(); // THIS IS BREAKING IT BTW
+
+    //         JoinedLobbyUI.Instance.UpdateJoinedPlayers();
+    //     } catch (LobbyServiceException e) {
+    //      Debug.LogError("Failed to join lobby: " + e);
+    //     }
+    // }
+
+    // private async void JoinLobbyByCode(string lobbyCode) {
+    //     try {
+    //         await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode);
+    //         Debug.Log("Joined lobby by code " + lobbyCode);
+    //     } catch (LobbyServiceException e) {
+    //         Debug.Log(e);
+    //     }
+    // }
+
+    // private async void QuickJoinLobby() {
+    //     try {
+    //         await LobbyService.Instance.QuickJoinLobbyAsync();
+    //     } catch (LobbyServiceException e) {
+    //         Debug.Log(e);
+    //     }
+    // }
+    
+    public async void JoinLobbyWithRelay(string lobbyId, string lobbyName)
+    {
+        try
+        {
+            Debug.Log($"Joining lobby: {lobbyId}, {lobbyName}");
+
+            if (JoinedLobbyUI.Instance == null)
+                Debug.LogError("JoinedLobbyUI.Instance is null");
+
+
+            var joinedLobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId);
+            
+            Debug.Log("successfully joined lobbyService lobby");
+
+            // Step 1: Get join code from lobby metadata
+            if (!joinedLobby.Data.TryGetValue("joinCode", out var joinCodeData))
+            {
+                Debug.LogError("No joinCode found in lobby metadata!");
+                return;
+            }
+
+            string joinCode = joinCodeData.Value;
+            Debug.Log("Got joinCode from metadata: '" + joinCode + "'");
+            string connectionType = "dtls"; // or "udp"
+
+            // Step 2: Join Relay and start client
+            Debug.Log("trying to start client with relay");
+            bool success = await RelayManager.Instance.StartClientWithRelay(joinCode, connectionType);
+            Debug.Log("ran that command");
+
+            if (success)
+            {
+                Debug.Log("Client started via Relay, showing joined lobby UI");
+                JoinedLobbyUI.Instance.Show(lobbyId, lobbyName);
+                JoinedLobbyUI.Instance.UpdateJoinedPlayers();
+            }
+            else
+            {
+                Debug.LogError("Failed to start client via Relay");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error joining lobby: {ex}");
         }
     }
 
-    private async void JoinLobbyByCode(string lobbyCode) {
-        try {
-            await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode);
-            Debug.Log("Joined lobby by code " + lobbyCode);
-        } catch (LobbyServiceException e) {
-            Debug.Log(e);
-        }
-    }
-
-    private async void QuickJoinLobby() {
-        try {
-            await LobbyService.Instance.QuickJoinLobbyAsync();
-        } catch (LobbyServiceException e) {
-            Debug.Log(e);
-        }
-    }
-
-    private void PrintPlayers(Lobby lobby) {
+    private void PrintPlayers(Lobby lobby)
+    {
         Debug.Log("Players in Lobby " + lobby.Name);
-        foreach (Player player in lobby.Players) {
+        foreach (Player player in lobby.Players)
+        {
             Debug.Log(player.Id);
         }
     }
