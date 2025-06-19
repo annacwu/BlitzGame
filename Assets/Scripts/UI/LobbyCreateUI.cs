@@ -15,11 +15,17 @@ public class LobbyCreateUI : MonoBehaviour
     [SerializeField] private Button cancelButton;
 
     private void Awake() {
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("Duplicate LobbyCreateUI found");
+            Destroy(gameObject);
+        }
         Instance = this;
         Debug.Log("LobbyCreateUI Awake: " + GetInstanceID());
         createLobbyPanel.SetActive(false); // Hide the panel initially
         createLobbyConfirmButton.onClick.RemoveAllListeners();
         createLobbyConfirmButton.onClick.AddListener(OnCreateLobbyConfirm);
+        Debug.Log("Button listeners count: " + createLobbyConfirmButton.onClick.GetPersistentEventCount());
         cancelButton.onClick.AddListener(Hide);
     }
 
@@ -34,6 +40,7 @@ public class LobbyCreateUI : MonoBehaviour
     // this is a wrapper so that the functionality of the method is public, but the logic remains internal (something about encapsulation??)
     // this method might be too simple to warrant that but here we are
     public void OnCreateLobbyConfirm() {
+        Debug.Log("on create confirm hit twice");
         OnCreateLobbyConfirm_Internal();
     }
     private void OnCreateLobbyConfirm_Internal() {
