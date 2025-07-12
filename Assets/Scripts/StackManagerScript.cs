@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO.Compression;
+using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
 using Unity.VisualScripting;
@@ -16,7 +17,7 @@ using UnityEngine.UI;
 /// so, this decides where to send cards
 /// and then those cards are updated on the network
 /// </summary>
-public class StackManagerScript : MonoBehaviour 
+public class StackManagerScript : NetworkBehaviour
 {
 
     private bool stackSelected = false;
@@ -32,30 +33,43 @@ public class StackManagerScript : MonoBehaviour
     //NUMBER OF DECKS TO SPAWN, SHOULD BE REPLACED BY AUTOMATIC DETERMINATION OF HOW MANY PLAYERS ARE PLAYING
     [SerializeField] private int numDecksTEMP;
 
+    private LobbyManager lmanager;
+    private NetworkManager networkManager;
+    [SerializeField] private Canvas mainCanvas;
+
+    private List<NetworkObject> acceptors = new List<NetworkObject>(); //list of acceptor piles, index = clientID of client who owns the stack
+    private List<NetworkObject> decks = new List<NetworkObject>(); //list of decks, index = clientID of client who owns the stack
+
+
     //handles selecting a stack - if already have a stack selected, then either deselects or replaces.
     //currently the only way to know what stack is selected is to look at the console :)
     //returns stackSelected so that the stack knows whether it is selected or not
 
     //TO ADD: pressing escape (or other key but i think escape is good) should DESELECT whatever stack u had selected
-    public void selectStack (GameObject clickedStack) {
-        
+    public void selectStack(GameObject clickedStack/*, int playerID*/)
+    {
+
         //otherwise preScript would be null
         StackScript preScript = null;
-        if (stackSelected) {
+        if (stackSelected)
+        {
             preScript = currentStack.GetComponent<StackScript>();
         }
         StackScript postScript = clickedStack.GetComponent<StackScript>();
 
         //if same, just deselect
-        if (clickedStack == currentStack) {
-            Debug.Log("No transfer possible: same stack");
+        if (clickedStack == currentStack)
+        {
+            //Debug.Log("No transfer possible: same stack");
             deselectStack();
             return;
         }
 
-        if (!stackSelected && postScript.canTransfer.Value && postScript.getTopCard() != null) {
+
+        if (!stackSelected && postScript.canTransfer.Value && postScript.getTopCard() != null && postScript.IsOwner)
+        {
             //if no stack selected, select the clicked stack, so long as one can transfer from it.
-            Debug.Log("Selected new stack!");
+            //Debug.Log("Selected new stack!");
             stackSelected = true;
             currentStack = clickedStack;
             currentStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = selectedColor;
@@ -64,12 +78,20 @@ public class StackManagerScript : MonoBehaviour
             return;
         }
 
-        
-        if (stackSelected && !postScript.canTransfer.Value && !postScript.canAcceptCards) {
-            Debug.Log("No transfer possible: new stack cannot accept or give cards!");
+
+        if (stackSelected && !postScript.canTransfer.Value && !postScript.canAcceptCards)
+        {
+            //Debug.Log("No transfer possible: new stack cannot accept or give cards!");
             deselectStack();
-        } else if (stackSelected && !postScript.canAcceptCards) {
-            Debug.Log("No transfer possible: new stack cannot accept cards!");
+        }
+        else if (stackSelected && !postScript.IsOwner && !postScript.IsOwnedByServer)
+        {
+            //Debug.Log("No transfer possible: not owner of new stack!");
+            deselectStack();
+        }
+        else if (stackSelected && !postScript.canAcceptCards)
+        {
+            //Debug.Log("No transfer possible: new stack cannot accept cards!");
             currentStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.white;
             preScript.toggleOutline(false);
             preScript.selected = false;
@@ -79,25 +101,33 @@ public class StackManagerScript : MonoBehaviour
             currentStack.GetComponent<StackScript>().toggleOutline(true);
             currentStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = selectedColor;
             return;
-        } else if (stackSelected) {
+        }
+        else if (stackSelected)
+        {
             //main meat of this whole thing
             StackScript.CardValues preCard = preScript.getTopCard();
             StackScript.CardValues postCard = postScript.getTopCard();
-            if (postCard == null) {
-                Debug.Log("Card transferred (to empty stack)");
+            if (postCard == null)
+            {
+                //Debug.Log("Card transferred (to empty stack), new numCards: " + postScript.getNumCards() + "oldstack numCards: " + preScript.getNumCards());
                 //transfer. empty stacks can accept anything
                 postScript.addCard(preCard.value, preCard.color, preCard.face);
                 preScript.removeTopCard();
                 deselectStack();
-            } else if (preCard.value == postCard.value + 1 && preCard.color == postCard.color) {
-                Debug.Log("Card transferred (normal conditions)");
+            }
+            else if (preCard.value == postCard.value + 1 && preCard.color == postCard.color)
+            {
+                //Debug.Log("Card transferred (normal conditions), new numCards: " + postScript.getNumCards() + "oldstack numCards: " + preScript.getNumCards());
                 postScript.addCard(preCard.value, preCard.color, preCard.face);
                 preScript.removeTopCard();
                 deselectStack();
                 //transfer
-            } else {
-                if (postScript.canTransfer.Value) {
-                    Debug.Log("No transfer possible: value or color conditions not met!");
+            }
+            else
+            {
+                if (postScript.canTransfer.Value)
+                {
+                    //Debug.Log("No transfer possible: value or color conditions not met!");
                     currentStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.white;
                     currentStack.GetComponent<StackScript>().toggleOutline(false);
                     preScript.selected = false;
@@ -105,110 +135,57 @@ public class StackManagerScript : MonoBehaviour
                     postScript.selected = true;
                     currentStack.GetComponent<StackScript>().toggleOutline(true);
                     currentStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = selectedColor;
-                } else {
+                }
+                else
+                {
                     deselectStack();
                 }
-                
+
             }
         }
 
     }
 
-    //commented out previous selection function
-    /*
-    //NETWORK PROOF I THINK. I DON'T THINK ANY OF THIS CODE HAS TO BE ON THE NETWORK ACTUALLY SO THAT'S COOL
-    public bool selectStack (GameObject selectedStack) {
-        //ulong stackNetworkID = selectedStack.GetComponent<NetworkObject>().NetworkObjectId; //don't actually have to use this i think
-
-        //if no stack is selected, selected stack that was clicked on
-        if (!stackSelected) {
-            stackSelected = true;
-            currentStack = selectedStack;
-            selectedStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = selectedColor; //sets color of selected stack to whatever the color is
-
-            return stackSelected;
-
-        //if you click a stack that is already selected, deselect it
-        } else if (stackSelected && currentStack == selectedStack) {
-
-            stackSelected = false;
-            currentStack = null;
-            selectedStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.white;
-            return stackSelected;
-
-        } else if (stackSelected && currentStack != selectedStack) { //should handle transferring cards
-
-            //should handle deciding if one can transfer cards.
-            
-            //if tranfer is possible: transfer, but do not change selection. 
-            //if not possible: do not transfer, change selection to new stack. 
-            StackScript.CardValues currentTopCard = null;
-            StackScript.CardValues newTopCard = null;
-
-            StackScript cScript = currentStack.GetComponent<StackScript>();
-            StackScript sScript = selectedStack.GetComponent<StackScript>();;
-
-            //if transferring from deck to acceptor pile, call function to transfer 3 at a time
-            if (cScript.isDeck && sScript.isAcceptorPile) {
-                transferThree(currentStack, selectedStack);
-                return stackSelected;
-            } else if (cScript.isAcceptorPile && sScript.isDeck && sScript.getTopCard() == null) {
-                resetAcceptor(currentStack, selectedStack);
-                return stackSelected;
-            } else {
-                currentTopCard = currentStack.GetComponent<StackScript>().getTopCard();
-                newTopCard = selectedStack.GetComponent<StackScript>().getTopCard();
-            }
-            
-            //normal card transferring
-            if (cScript.getTopCard() != null && sScript.getTopCard() != null && sScript.canAcceptCards) {
-                //Debug.Log("transferring from a deck: " + cScript.isDeck + "transferring to an acceptor pile: " + sScript.isAcceptorPile);
-            } else if (cScript.getTopCard() != null && cScript.canTransfer.Value && sScript.canAcceptCards) {
-                //empty stacks can accept any card
-                currentTopCard = currentStack.GetComponent<StackScript>().getTopCard();
-                selectedStack.GetComponent<StackScript>().addCard(currentTopCard.value, currentTopCard.color, currentTopCard.face);
-                currentStack.GetComponent<StackScript>().removeTopCard();
-                return stackSelected;
-            } else {
-                //if transferring stack is empty, simply deselect all. 
-                deselectStack();
-                return false;
-            }
-
-            if (currentTopCard.value - 1 == newTopCard.value && currentTopCard.color == newTopCard.color && cScript.canTransfer.Value == true && !sScript.isAcceptorPile) {
-                //transfer
-                //Debug.Log("Trying to Transfer!!");
-                selectedStack.GetComponent<StackScript>().addCard(currentTopCard.value, currentTopCard.color, currentTopCard.face); //add new card to selected stack
-                currentStack.GetComponent<StackScript>().removeTopCard(); //remove card from old stack
-                //Debug.Log("Card Transferred");
-            } else {
-                //do not transfer
-                currentStack.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1);
-                currentStack = selectedStack;
-                selectedStack.GetComponent<SpriteRenderer>().color = selectedColor;
-                //Debug.Log("You may not tranfer this card");
-                return stackSelected;
-            }
-        }
-        return false;
-    } */
-
     //spawns cards in a configuration for the start of the game
     //CAN ONLY BE RUN ON THE SERVER. we can either fix this down the line or make it a feature (which i think makes sense anyways)
-    public void startGame(/*GameObject[] players, int numPlayers*/ /*takes in players / position of players maybe?*/) {
+    public void startGame()
+    {
+
+        /*
+        lmanager = GameObject.FindGameObjectWithTag("LobbyManager").GetComponent<LobbyManager>();
+        Debug.Log("players: " + lmanager.GetPlayers()); */
+
+        networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
+        foreach (ulong clientID in networkManager.ConnectedClientsIds)
+        {
+            Debug.Log("Client IDs: " + clientID);
+            displayClientIDRpc(clientID, RpcTarget.Single(clientID, RpcTargetUse.Temp)); //should send command only to specific client
+            //clientText.text = "ClientId = " + NetworkManager.ConnectedClientsIds[counter];
+            //counter++;
+        }
+
         //  a. a deck consists of 40 cards, 4 of each number (1-10) in each of the 4 colors (red, blue, yellow (?), green)
 
         GameObject table = Instantiate(tablePrefab);
         var tableNetworkObject = table.GetComponent<NetworkObject>();
         tableNetworkObject.Spawn(true);
-        Debug.Log($"[Server] Table Position: {table.transform.position}, Rotation: {table.transform.rotation}");
+        //Debug.Log($"[Server] Table Position: {table.transform.position}, Rotation: {table.transform.rotation}");
 
-        for (int i = 0; i < numDecksTEMP; i++) {
+        int counter = 0;
+
+        foreach (ulong clientID in networkManager.ConnectedClientsIds)
+        {
             //computes where decks should go (TEMP)
             //Vector3 location = spawnSystem.transform.GetChild(i).transform.position;
+
+
+            //int currentPlayer = players[i];
+            //player that owns current decks
+
+
             Vector3 zeroPos = new Vector3(0, -45 * mult, 0); //position of spawnpoint 1
 
-            Quaternion rotation = spawnSystem.transform.GetChild(i).transform.rotation;
+            Quaternion rotation = spawnSystem.transform.GetChild(counter).transform.rotation;
             Quaternion zeroRot = new Quaternion(0, 0, 0, 0);
 
             //rotates table to try and get it to work :3
@@ -228,98 +205,128 @@ public class StackManagerScript : MonoBehaviour
             GameObject newDeck = Instantiate(stackPrefab, deckPos, zeroRot, table.transform); //this is a template position - ideally, we'd use the position + rotation of the player
             //createFullDeck(newDeck, "template face"); //also template for now :)
             var newDeckNetworkObject = newDeck.GetComponent<NetworkObject>();
-            newDeckNetworkObject.Spawn(true);
+            newDeckNetworkObject.SpawnWithOwnership(clientID, true);
             newDeckNetworkObject.transform.parent = table.transform; //fixes the parent issue >?>?>?
             createFullDeck(newDeck, "template face"); //moving this line of code down fixed a bunch of errors I was getting and I have no idea why :)
             newDeck.GetComponent<StackScript>().shuffle();
             newDeck.GetComponent<StackScript>().isDeck = true;
             newDeck.GetComponent<StackScript>().canTransfer.Value = false;
             newDeck.GetComponent<StackScript>().canAcceptCards = false;
+            //newDeck.GetComponent<StackScript>().setOwner(currentPlayer); //sets owner of stack
             newDeck.GetComponent<StackScript>().faceOtherWay();
+            setStackOwnerTextRpc(newDeckNetworkObject.NetworkObjectId, clientID);
+
+            //add deck to decks
+            decks.Add(newDeckNetworkObject);
+
 
             //instantiates acceptor pile
             deckPos.x += 20 * mult;
             GameObject newAcceptorPile = Instantiate(stackPrefab, deckPos, zeroRot, table.transform);
             var newAcceptorPileNetworkObject = newAcceptorPile.GetComponent<NetworkObject>();
-            newAcceptorPileNetworkObject.Spawn(true);
+            newAcceptorPileNetworkObject.SpawnWithOwnership(clientID, true);
             newAcceptorPileNetworkObject.transform.parent = table.transform; //fixes the parent issue >?>?>?
             newAcceptorPile.GetComponent<StackScript>().isAcceptorPile = true;
             newAcceptorPile.GetComponent<StackScript>().canAcceptCards = false;
             newAcceptorPile.GetComponent<StackScript>().canTransfer.Value = true;
+            setStackOwnerTextRpc(newAcceptorPileNetworkObject.NetworkObjectId, clientID);
 
-            //NO BLITZ BUTTON (instead make it a UI element on each player's screen. much easier don't have to mess around w/ spawning in 
-            //buttons which was hell)
+            //add acceptor pile to acceptors
+            acceptors.Add(newAcceptorPileNetworkObject);
 
             //sets up the stack of 10
             //zeroPos.x -= 20;
             GameObject stackOf10 = Instantiate(stackPrefab, firstCardPos, zeroRot, table.transform);
             var stackOf10NetworkObject = stackOf10.GetComponent<NetworkObject>();
-            stackOf10NetworkObject.Spawn(true);
+            stackOf10NetworkObject.SpawnWithOwnership(clientID, true);
             stackOf10NetworkObject.transform.parent = table.transform; //fixes the parent issue >?>?>?
-            for (int j = 0; j < 10; j++) {
+            for (int j = 0; j < 10; j++)
+            {
                 StackScript.CardValues topCard = newDeck.GetComponent<StackScript>().getTopCard();
                 stackOf10.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face);
                 newDeck.GetComponent<StackScript>().removeTopCard();
             }
             stackOf10.GetComponent<StackScript>().canAcceptCards = false;
+            setStackOwnerTextRpc(stackOf10NetworkObject.NetworkObjectId, clientID);
 
             //sets up the three other stacks
-            for (int j = 0; j < 3; j++) {
+            for (int j = 0; j < 3; j++)
+            {
                 firstCardPos.x -= 20 * mult;
                 GameObject newStack = Instantiate(stackPrefab, firstCardPos, zeroRot, table.transform);
                 var newStackNetworkObject = newStack.GetComponent<NetworkObject>();
-                newStackNetworkObject.Spawn(true);
+                newStackNetworkObject.SpawnWithOwnership(clientID, true);
                 newStackNetworkObject.transform.parent = table.transform; //fixes the parent issue >?>?>?
                 StackScript.CardValues topCard = newDeck.GetComponent<StackScript>().getTopCard();
                 newStack.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face);
                 newDeck.GetComponent<StackScript>().removeTopCard();
+                setStackOwnerTextRpc(newStackNetworkObject.NetworkObjectId, clientID);
             }
 
             //rotates back
             table.transform.rotation = zeroRot;
-            
+
             /*Vector3 tablePosition = table.transform.position;
             tablePosition.z -= 1;
             table.transform.SetPositionAndRotation(tablePosition, zeroRot);*/
+            counter++;
         }
 
-        
+
 
         //2. calls function to shuffle the deck
         //3. doles out cards to correct stacks
         //4. repeat for each player
     }
 
-    private void doSomething () {
-        Debug.Log("Did something");
+    //set display of clientid in all clients, theoretisch
+    [Rpc(SendTo.SpecifiedInParams)]
+    void displayClientIDRpc(ulong clientID, RpcParams rpcParams = default)
+    {
+        TMP_Text clientText = mainCanvas.GetComponentInChildren<TMP_Text>();
+        clientText.text = "ClientID = " + clientID;
+    }
+
+    [Rpc(SendTo.Everyone)]
+    void setStackOwnerTextRpc(ulong StackID, ulong clientID)
+    {
+        NetworkObject targetStack = GetNetworkObject(StackID);
+        targetStack.GetComponentInChildren<Canvas>().GetComponentInChildren<TMP_Text>().text = "OwnerID = " + clientID;
     }
 
     //adds 1 card of each color / value combo to make a full deck. since faces aren't implemented yet that's mostly just a placeholder. 
-    private void createFullDeck (GameObject deck, string face) {
-        Color[] colors = {Color.blue, Color.green, Color.yellow, Color.red};
+    private void createFullDeck(GameObject deck, string face)
+    {
+        Color[] colors = { Color.blue, Color.green, Color.yellow, Color.red };
         StackScript currentDeckScript = deck.GetComponent<StackScript>();
 
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 4; j++) {
+        for (int i = 0; i < 10; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
                 currentDeckScript.addCard(i + 1, colors[j], face);
             }
         }
     }
 
     //returns bool, if true a stack is currently selected. 
-    public bool isAStackSelected() {
+    public bool isAStackSelected()
+    {
         return stackSelected;
     }
 
     //returns currently selected stack
-    public GameObject returnCurrentSelection () {
+    public GameObject returnCurrentSelection()
+    {
         return currentStack;
     }
 
     //resets selection so that no stack is currently selected
-    public void deselectStack () {
+    public void deselectStack()
+    {
         stackSelected = false;
-        if (currentStack != null) {
+        if (currentStack != null)
+        {
             currentStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.white;
             currentStack.GetComponent<StackScript>().toggleOutline(false);
             currentStack.GetComponent<StackScript>().selected = false;
@@ -327,5 +334,61 @@ public class StackManagerScript : MonoBehaviour
         }
     }
 
+    //transfer (up to) three cards from the current player's deck to the current player's acceptor pile
+    //if there are no cards in the player's deck, instead transfer all cards back to the deck (in the correct order)
+    public void transferThree()
+    {
+        networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
+        ulong currentClientID = networkManager.LocalClientId;
+        //Debug.Log("Client who clicked the button: " + currentClientID);
+        transferThreeRpc(currentClientID);
+    }
+
+    //only server keeps track of who owns what acceptor pile / deck, so need server to run the transfer 3 code methinks
+    [Rpc(SendTo.Server)]
+    private void transferThreeRpc(ulong clientID)
+    {
+        NetworkObject deckObj = decks[unchecked((int)clientID)]; //converts ulong to int i think
+        NetworkObject acceptorObj = acceptors[unchecked((int)clientID)];
+
+        if (deckObj.GetComponent<StackScript>().getTopCard() != null)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (deckObj.GetComponent<StackScript>().getTopCard() != null)
+                {
+                    StackScript.CardValues transferCard = deckObj.GetComponent<StackScript>().getTopCard();
+                    acceptorObj.GetComponent<StackScript>().addCard(transferCard.value, transferCard.color, transferCard.face);
+                    deckObj.GetComponent<StackScript>().removeTopCard();
+                }
+            }
+        }
+        else
+        {
+            while (acceptorObj.GetComponent<StackScript>().getTopCard() != null)
+            {
+                StackScript.CardValues transferCard = acceptorObj.GetComponent<StackScript>().getTopCard();
+                deckObj.GetComponent<StackScript>().addCard(transferCard.value, transferCard.color, transferCard.face);
+                acceptorObj.GetComponent<StackScript>().removeTopCard();
+            }
+        }
+        //transferring code goes here :)
+    }
+
+    //called when blitz button is pressed
+    //checks whether conditions have been met, and if so, ends the game
+    public void blitz()
+    {
+        /*
+        if (stack of ten is empty) {
+            end the game, display scores (in new screen or overlay of some kind)
+        }
+        */
+    }
     
+    [Rpc(SendTo.Server)]
+    private void blitzRpc(ulong clientID)
+    {
+        
+    }
 }

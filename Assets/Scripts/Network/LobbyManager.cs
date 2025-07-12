@@ -15,15 +15,17 @@ public class LobbyManager : NetworkBehaviour
 
     // i just learned what making an event was so this is that i think
     public event EventHandler<OnLobbyListChangedEventArgs> OnLobbyListChanged;
-    public class OnLobbyListChangedEventArgs : System.EventArgs {
+    public class OnLobbyListChangedEventArgs : System.EventArgs
+    {
         public List<Lobby> lobbyList;
     }
 
-    private Lobby hostLobby ;
+    private Lobby hostLobby;
     private float heartbeatTimer;
 
 
-    private void Awake() {
+    private void Awake()
+    {
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -35,11 +37,13 @@ public class LobbyManager : NetworkBehaviour
     }
 
 
-    private async void Start() {
+    private async void Start()
+    {
         await UnityServices.InitializeAsync();
 
 
-        AuthenticationService.Instance.SignedIn += () => {
+        AuthenticationService.Instance.SignedIn += () =>
+        {
             Debug.Log("Signed in " + AuthenticationService.Instance.PlayerId);
         };
 
@@ -48,19 +52,23 @@ public class LobbyManager : NetworkBehaviour
             // make it so user doesn't have to make an account to sign in through steam or something
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
         }
-        
+
     }
 
-    private void Update() {
+    private void Update()
+    {
         HandleLobbyHeartbeat();
     }
 
     // lobby dies if inactive for 30 sec, so this keeps it open
-    private async void HandleLobbyHeartbeat() {
-        if (hostLobby != null) {
+    private async void HandleLobbyHeartbeat()
+    {
+        if (hostLobby != null)
+        {
             heartbeatTimer -= Time.deltaTime;
             // if timer has lapsed
-            if (heartbeatTimer < 0f) {
+            if (heartbeatTimer < 0f)
+            {
                 float heartbeatTimerMax = 15;
                 heartbeatTimer = heartbeatTimerMax;
 
@@ -86,8 +94,10 @@ public class LobbyManager : NetworkBehaviour
     //     }
     // }
 
-    public async void CreateLobbyWithRelay(string lobbyName, int numPlayers) {
-        try {
+    public async void CreateLobbyWithRelay(string lobbyName, int numPlayers)
+    {
+        try
+        {
             int maxPlayers = numPlayers;
 
             // Step 1: Start host with Relay and get the join code
@@ -96,7 +106,8 @@ public class LobbyManager : NetworkBehaviour
             Debug.Log("join code relay: " + joinCode);
 
             // Step 2: Create lobby with the Relay join code in metadata
-            var options = new CreateLobbyOptions {
+            var options = new CreateLobbyOptions
+            {
                 IsPrivate = false,
                 Data = new Dictionary<string, DataObject> {
                     {
@@ -118,31 +129,42 @@ public class LobbyManager : NetworkBehaviour
             // Immediately switch to the joined lobby screen since the player is already in this lobby
             JoinedLobbyUI.Instance.Show(lobby.Id, lobby.Name);
 
-        } catch (LobbyServiceException e) {
-        Debug.LogError("LobbyServiceException: " + e);
-        } catch (Exception e) {
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.LogError("LobbyServiceException: " + e);
+        }
+        catch (Exception e)
+        {
             Debug.LogError("Unexpected Exception: " + e);
         }
     }
 
 
     // find lobbies with unity's API
-    private async void ListLobbies() {
-        try {
+    private async void ListLobbies()
+    {
+        try
+        {
             // lists ALL lobbies active ever
             QueryResponse queryResponse = await LobbyService.Instance.QueryLobbiesAsync();
 
             Debug.Log("Lobbies found: " + queryResponse.Results.Count);
-            foreach (Lobby lobby in queryResponse.Results) {
+            foreach (Lobby lobby in queryResponse.Results)
+            {
                 Debug.Log(lobby.Name + " " + lobby.MaxPlayers);
             }
-        } catch (LobbyServiceException e) {
+        }
+        catch (LobbyServiceException e)
+        {
             Debug.Log(e);
         }
     }
 
-    public async void RefreshLobbyList() {
-        try {
+    public async void RefreshLobbyList()
+    {
+        try
+        {
             QueryLobbiesOptions options = new QueryLobbiesOptions();
             options.Count = 25;
 
@@ -164,7 +186,9 @@ public class LobbyManager : NetworkBehaviour
             QueryResponse lobbyListQueryResponse = await LobbyService.Instance.QueryLobbiesAsync();
 
             OnLobbyListChanged?.Invoke(this, new OnLobbyListChangedEventArgs { lobbyList = lobbyListQueryResponse.Results });
-        } catch (LobbyServiceException e) {
+        }
+        catch (LobbyServiceException e)
+        {
             Debug.Log(e);
         }
     }
@@ -209,7 +233,7 @@ public class LobbyManager : NetworkBehaviour
     //         Debug.Log(e);
     //     }
     // }
-    
+
     public async void JoinLobbyWithRelay(string lobbyId, string lobbyName)
     {
         try
@@ -221,7 +245,7 @@ public class LobbyManager : NetworkBehaviour
 
 
             var joinedLobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId);
-            
+
             Debug.Log("successfully joined lobbyService lobby");
 
             // Step 1: Get join code from lobby metadata
@@ -266,22 +290,32 @@ public class LobbyManager : NetworkBehaviour
         }
     }
 
-    public async void LeaveLobby(){
-        try {
+    public async void LeaveLobby()
+    {
+        try
+        {
             string playerId = AuthenticationService.Instance.PlayerId;
             await LobbyService.Instance.RemovePlayerAsync("lobbyId", playerId);
         }
-        catch (LobbyServiceException e) {
+        catch (LobbyServiceException e)
+        {
             Debug.Log(e);
         }
     }
 
     //moves everyone from the lobby to the MainGameScene
-    public void MoveToGame() {
+    public void MoveToGame()
+    {
         Debug.Log("MovingOn");
-        if (IsHost){
+        if (IsHost)
+        {
             NetworkManager.SceneManager.LoadScene("MainGameScene", LoadSceneMode.Single);
         }
+    }
+
+    public List<Player> GetPlayers()
+    {
+        return hostLobby.Players;
     }
 
 }

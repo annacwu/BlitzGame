@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - StackManager
+  - PlayerCam
+  - LobbyManager
+  - NetworkManager
   layers:
   - Default
   - TransparentFX

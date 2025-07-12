@@ -472,7 +472,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 35753741}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6b05a7f52bca44b8bb0d4b92126152a, type: 3}
+  m_Script: {fileID: 11500000, guid: 45507a2e802d4d24ba1138772d8354b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   createLobbyPanel: {fileID: 1355964850}
@@ -3965,7 +3965,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1129104094}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7c4505fe969a442f4ba9780fcbf21d98, type: 3}
+  m_Script: {fileID: 11500000, guid: 276bab85db7d2774c9b69314a4be335b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   createLobbyButton: {fileID: 154955762}
