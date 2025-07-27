@@ -1489,9 +1489,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3355245c79b7c4f5298b64d964a50f57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetSceneName: MainGameScene
-  relayManager: {fileID: 63981639}
-  lobbyManager: {fileID: 38359006}
 --- !u!4 &1770708605
 Transform:
   m_ObjectHideFlags: 0

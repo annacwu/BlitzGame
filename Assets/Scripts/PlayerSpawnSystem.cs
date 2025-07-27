@@ -20,61 +20,61 @@ public class PlayerSpawnSystem : MonoBehaviour
     private void OnEnable()
     {
         Debug.Log("OnEnable in PlayerSpawnSystem called");
-        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
-        {
-            Debug.Log("Server is active, calling OnServerStarted");
-            // Register the method immediately if the server is already started
-            OnServerStarted();
-            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-        }
+        // if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+        // {
+        //     Debug.Log("Server is active, calling OnServerStarted");
+        //     // Register the method immediately if the server is already started
+        //     OnServerStarted();
+        //     NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        // }
     }
 
     // separate method so that it does the network manager stuff before it looks for the server
     public void RegisterSpawnSystemEvents()
     {
         Debug.Log("called this funciton but not if statement");
-        if (NetworkManager.Singleton != null)
-        {
-            Debug.Log("Registering spawn system events");
-            // so something is wrong with the line below this it doesn't actually acll that function idk why
-            // NetworkManager.Singleton.OnServerStarted += OnServerStarted;
-            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-        }
-        else
-        {
-            Debug.LogError("NetworkManager.Singleton is null. Make sure the NetworkManager is properly initialized.");
-        }
+        // if (NetworkManager.Singleton != null)
+        // {
+        //     Debug.Log("Registering spawn system events");
+        //     // so something is wrong with the line below this it doesn't actually acll that function idk why
+        //     // NetworkManager.Singleton.OnServerStarted += OnServerStarted;
+        //     NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
+        // }
+        // else
+        // {
+        //     Debug.LogError("NetworkManager.Singleton is null. Make sure the NetworkManager is properly initialized.");
+        // }
     }
 
-    private void OnDisable()
-    {
-        if (NetworkManager.Singleton != null)
-        {
-            NetworkManager.Singleton.OnServerStarted -= OnServerStarted; // also this might not work then if the other one didnt
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
-        }
-    }
+    // private void OnDisable()
+    // {
+    //     if (NetworkManager.Singleton != null)
+    //     {
+    //         NetworkManager.Singleton.OnServerStarted -= OnServerStarted; // also this might not work then if the other one didnt
+    //         NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+    //     }
+    // }
 
     // when that event occurs, do the player spawn including if host player is spawing
-    public void OnServerStarted()
-    {
-        Debug.Log("OnServerStarted in PlayerSpawnSystem called");
-        if (NetworkManager.Singleton.IsHost)
-        {
-            // Spawn the host player
-            Debug.Log("Spawning host player");
-            SpawnPlayer(NetworkManager.Singleton.LocalClientId);
-        }
-    }
+    // public void OnServerStarted()
+    // {
+    //     Debug.Log("OnServerStarted in PlayerSpawnSystem called");
+    //     if (NetworkManager.Singleton.IsHost)
+    //     {
+    //         // Spawn the host player
+    //         Debug.Log("Spawning host player");
+    //         SpawnPlayer(NetworkManager.Singleton.LocalClientId);
+    //     }
+    // }
 
-    public void OnClientConnected(ulong clientId)
-    {
-        Debug.Log($"OnClientConnected: clientId {clientId} connected.");
-        if (NetworkManager.Singleton.IsServer)
-        {
-            SpawnPlayer(clientId);
-        }
-    }
+    // public void OnClientConnected(ulong clientId)
+    // {
+    //     Debug.Log($"OnClientConnected: clientId {clientId} connected.");
+    //     if (NetworkManager.Singleton.IsServer)
+    //     {
+    //         SpawnPlayer(clientId);
+    //     }
+    // }
 
     // spawn system doesn't exist until player joins, so need methods to add and remove it
     public static void AddSpawnPoint(Transform transform)
@@ -110,59 +110,59 @@ public class PlayerSpawnSystem : MonoBehaviour
 
         RotateTableForPosition(playerInfo.positionNumber);
 
-        // Debug.Log($"Current LocalClientId: {NetworkManager.Singleton.LocalClientId}");
+        Debug.Log($"Current LocalClientId: {NetworkManager.Singleton.LocalClientId}");
 
         
-        // Debug.Log($"Local Client Id: {NetworkManager.Singleton.LocalClientId}, client Id: {clientId}");
-        // if (NetworkManager.Singleton.LocalClientId == clientId) {
-        //     Debug.Log($"Attempting to rotate table for client {clientId}");
-        //     RotateTableTowardPlayer(spawnPoints[nextIndex].position, clientId);
-        // }
+        Debug.Log($"Local Client Id: {NetworkManager.Singleton.LocalClientId}, client Id: {clientId}");
+        if (NetworkManager.Singleton.LocalClientId == clientId) {
+            Debug.Log($"Attempting to rotate table for client {clientId}");
+            RotateTableTowardPlayer(spawnPoints[nextIndex].position, clientId);
+        }
 
         nextIndex++;
     }
 
     // making this a client rpc method makes the server execute it on the client's screen so it is synchronized
     // but does not make it universal
-    // [ClientRpc]
-    // private void RotateTableTowardPlayerClientRpc(ulong clientId) {
-    //     // ensure it is the right client
-    //     if (NetworkManager.Singleton.LocalClientId != clientId) {
-    //         return;
-    //     }
+    [ClientRpc]
+    private void RotateTableTowardPlayerClientRpc(ulong clientId) {
+        // ensure it is the right client
+        if (NetworkManager.Singleton.LocalClientId != clientId) {
+            return;
+        }
 
-    //     var localPlayer = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
-    //     if (localPlayer == null) {
-    //         Debug.LogError("Local player object not found.");
-    //         return;
-    //     }
+        var localPlayer = NetworkManager.Singleton.SpawnManager.GetLocalPlayerObject();
+        if (localPlayer == null) {
+            Debug.LogError("Local player object not found.");
+            return;
+        }
 
-    //     Vector3 directionToPlayer = localPlayer.transform.position - tableObject.transform.position;
+        Vector3 directionToPlayer = localPlayer.transform.position - tableObject.transform.position;
 
-    //     float angle = Mathf.Atan2(directionToPlayer.y, directionToPlayer.x) * Mathf.Rad2Deg;
-    //     tableObject.transform.rotation = Quaternion.Euler(0,0, angle);
+        float angle = Mathf.Atan2(directionToPlayer.y, directionToPlayer.x) * Mathf.Rad2Deg;
+        tableObject.transform.rotation = Quaternion.Euler(0,0, angle);
 
-    //     Debug.Log($"Table rotated for client {clientId} at angle {angle}");
-    // }
+        Debug.Log($"Table rotated for client {clientId} at angle {angle}");
+    }
 
 
-    // // old rotate method before clientrpc implemented
-    // [ClientRpc]
-    // private void RotateTableTowardPlayer(Vector3 playerPosition, ulong clientId)
-    // {
-    //     Debug.Log($"RotateTableTowardPlayerClientRpc called for client {clientId}");
-    //     if (NetworkManager.Singleton.LocalClientId != clientId) {
-    //         return;
-    //     }
-    //     // Get the direction from the table to the player
-    //     Vector3 directionToPlayer = playerPosition - tableObject.transform.position;
+    // old rotate method before clientrpc implemented
+    [ClientRpc]
+    private void RotateTableTowardPlayer(Vector3 playerPosition, ulong clientId)
+    {
+        Debug.Log($"RotateTableTowardPlayerClientRpc called for client {clientId}");
+        if (NetworkManager.Singleton.LocalClientId != clientId) {
+            return;
+        }
+        // Get the direction from the table to the player
+        Vector3 directionToPlayer = playerPosition - tableObject.transform.position;
         
-    //     // Calculate the angle and apply the rotation
-    //     float angle = Mathf.Atan2(directionToPlayer.y, directionToPlayer.x) * Mathf.Rad2Deg;
-    //     tableObject.transform.rotation = Quaternion.Euler(0, 0, angle); // offset problem might be here
+        // Calculate the angle and apply the rotation
+        float angle = Mathf.Atan2(directionToPlayer.y, directionToPlayer.x) * Mathf.Rad2Deg;
+        tableObject.transform.rotation = Quaternion.Euler(0, 0, angle); // offset problem might be here
 
-    //     Debug.Log($"Table rotated at angle {angle}");
-    // }
+        Debug.Log($"Table rotated at angle {angle}");
+    }
 
     private void RotateTableTowardPlayer(Vector3 playerPosition) {
         

@@ -27,7 +27,7 @@ public class StackScript : NetworkBehaviour
     private StackManagerScript smanager;
     public GameObject cardPrefab;
     [SerializeField] public bool isDeck = false; //decks start with a full deck of cards, which is shuffled automatically. Decks are spawned in when the game starts, & handle the whole doling out cards thing.
-    public bool isAcceptorPile = false; //only true for acceptor pile
+    public NetworkVariable<bool> isAcceptorPile = new(false); //only true for acceptor pile
     public bool canAcceptCards = true; //only false for acceptor pile, deck, and stack of 10
 
     public NetworkVariable<bool> canTransfer = new(true); //only false for decks and newly created center decks
@@ -37,6 +37,7 @@ public class StackScript : NetworkBehaviour
 
     public NetworkVariable<bool> isEmpty = new(false); //if there are no cards, this is true
     public NetworkVariable<bool> isOnTable = new(false); //stacks instantiated by placing a 1 on the table will have this value set to true
+    public NetworkVariable<bool> isStackOf10 = new(false); //only true for the stack of 10
 
     //private NetworkVariable<int> owner = new(-1); //stores playerID of owner
     private LobbyManager lmanager;

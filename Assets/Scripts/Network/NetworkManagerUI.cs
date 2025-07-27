@@ -25,7 +25,7 @@ public class NetworkManagerUI : MonoBehaviour
         hostButton.onClick.AddListener(() => {
             NetworkManager.Singleton.StartHost();
             Debug.Log("Host started manually"); // it was never starting without the following line
-            playerSpawnSystem.OnServerStarted();
+            // playerSpawnSystem.OnServerStarted();
             playerSpawnSystem.RegisterSpawnSystemEvents();
         });
 
