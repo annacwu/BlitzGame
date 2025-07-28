@@ -10,11 +10,13 @@ public class TableScript : NetworkBehaviour
     private GameObject StackManager;
     [SerializeField] private GameObject stackPrefab;
     private NetworkManager networkManager;
+    private GameObject spawnSystem;
 
     void Start()
     {
         networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
         StackManager = GameObject.FindGameObjectWithTag("StackManager");
+        spawnSystem = GameObject.FindGameObjectWithTag("SpawnPoints");
     }
 
     void Update()
@@ -55,17 +57,21 @@ public class TableScript : NetworkBehaviour
                 return;
             }
 
+            ulong currentClientID = networkManager.LocalClientId;
+
             //Vector3 mouseScreenLoc = Input.mousePosition; //old read, not sure why no workie
             Vector3 mouseScreenLoc = Mouse.current.position.ReadValue();
             mouseScreenLoc.z = 70;
-            Vector2 mouseRealLoc = Camera.main.ScreenToWorldPoint(mouseScreenLoc);
+            Camera playerCam = spawnSystem.transform.GetChild(unchecked((int)currentClientID)).transform.GetChild(0).GetComponent<Camera>();
+            //Vector2 mouseRealLoc = Camera.main.ScreenToWorldPoint(mouseScreenLoc);
+            Vector2 mouseRealLoc = playerCam.ScreenToWorldPoint(mouseScreenLoc);
 
             //create new stack
             createNewStackRpc(mouseRealLoc, topCard.value, topCard.color, topCard.face);
             currentStack.GetComponent<StackScript>().removeTopCard();
 
             //increment the player's score
-            ulong currentClientID = networkManager.LocalClientId;
+            
             if (currentStack.GetComponent<StackScript>().isStackOf10.Value)
             {   
                 //if we're transferring from the acceptor pile we gotta increment twice!!!

@@ -8,6 +8,11 @@ TagManager:
   - PlayerCam
   - LobbyManager
   - NetworkManager
+  - SpawnPoints
+  - Stack
+  - Table
+  - Card
+  - ScoreSummary
   layers:
   - Default
   - TransparentFX

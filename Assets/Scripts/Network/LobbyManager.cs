@@ -306,6 +306,11 @@ public class LobbyManager : NetworkBehaviour
     //moves everyone from the lobby to the MainGameScene
     public void MoveToGame()
     {
+        Debug.Log($"IsServer: {NetworkManager.Singleton.IsServer}, Transport: {NetworkManager.Singleton.NetworkConfig.NetworkTransport.GetType().Name}");
+        Debug.Log($"Connection Approval: {NetworkManager.Singleton.NetworkConfig.ConnectionApproval}");
+        Debug.Log($"Scene Management Enabled: {NetworkManager.Singleton.NetworkConfig.EnableSceneManagement}");
+        Debug.Log($"Protocol Version: {NetworkManager.Singleton.NetworkConfig.ProtocolVersion}");
+
         Debug.Log("MovingOn");
         if (IsHost)
         {

@@ -22,6 +22,7 @@ using UnityEngine.UIElements;
 /// </summary>
 public class StackManagerScript : NetworkBehaviour
 {
+    private NetworkVariable<bool> gameHasStarted = new(false);
     private bool waitingForStart = false;
     private bool stackSelected = false;
     private GameObject currentStack;
@@ -53,43 +54,62 @@ public class StackManagerScript : NetworkBehaviour
 
     [SerializeField] private GameObject mainCamera;
 
-    private HashSet<ulong> syncedClients = new();
+    private List<ulong> syncedClients = new();
 
-  void Awake()
-  {
-     if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
+    void Awake()
     {
-        NetworkManager.Singleton.SceneManager.OnSceneEvent += HandleSceneEvent;
-        Debug.Log("subscribed to the scene event in awake");
-    }
-  }
-
-  private void HandleSceneEvent(SceneEvent sceneEvent)
-  {
-    Debug.Log($"scene event: {sceneEvent.SceneEventType}, scene: {sceneEvent.SceneName}, clientid: {sceneEvent.ClientId}");
-    if (sceneEvent.SceneName == "MainGameScene")
-    {
-        if (sceneEvent.SceneEventType == SceneEventType.LoadEventCompleted)
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
         {
-            Debug.Log($"client {sceneEvent.ClientId} has fully synchronized");
-            syncedClients.Add(sceneEvent.ClientId);
+            NetworkManager.Singleton.SceneManager.OnSceneEvent += HandleSceneEvent;
+            Debug.Log("subscribed to the scene event in awake");
+        }
+    }
 
-                if (syncedClients.Count == NetworkManager.Singleton.ConnectedClients.Count)
-                {
-                    Debug.Log("all clients synchronized");
-                // this is where you would then call the spawning stuf
+    //[Rpc(SendTo.Server)]
+    private void HandleSceneEvent(SceneEvent sceneEvent)
+    {
+        Debug.Log($"scene event: {sceneEvent.SceneEventType}, scene: {sceneEvent.SceneName}, clientid: {sceneEvent.ClientId}");
+        if (sceneEvent.SceneName == "MainGameScene")
+        {
+            if (sceneEvent.SceneEventType == SceneEventType.LoadEventCompleted)
+            {
+                Debug.Log($"client {sceneEvent.ClientId} has fully synchronized");
+                //wasn't working bc clients aren't allowed to access connectedClients so i moved the rest of the checks to an Rpc :)
+                startGameRpc(sceneEvent.ClientId);
             }
         }
     }
-  }
+
+    [Rpc(SendTo.Server)]
+    void startGameRpc(ulong clientID)
+    {
+        syncedClients.Add(clientID);
+        Debug.Log("Synced Clients: " + syncedClients.Count + "\nConnected Clients: " + NetworkManager.Singleton.ConnectedClients.Count);
+        if (syncedClients.Count == NetworkManager.Singleton.ConnectedClients.Count)
+        {
+            Debug.Log("all clients synchronized");
+            networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
+            //this is where you would then call the spawning stuff
+            if (!gameHasStarted.Value)
+            {
+                foreach (ulong ID in networkManager.ConnectedClientsIds)
+                {
+                    scores.Add(0); //initialize scores
+                }
+
+                Debug.Log("starting the game");
+                startGame();
+            }
+        }
+    }
 
 
-  //handles selecting a stack - if already have a stack selected, then either deselects or replaces.
-  //currently the only way to know what stack is selected is to look at the console :)
-  //returns stackSelected so that the stack knows whether it is selected or not
+    //handles selecting a stack - if already have a stack selected, then either deselects or replaces.
+    //currently the only way to know what stack is selected is to look at the console :)
+    //returns stackSelected so that the stack knows whether it is selected or not
 
-  //TO ADD: pressing escape (or other key but i think escape is good) should DESELECT whatever stack u had selected
-  public void selectStack(GameObject clickedStack/*, int playerID*/)
+    //TO ADD: pressing escape (or other key but i think escape is good) should DESELECT whatever stack u had selected
+    public void selectStack(GameObject clickedStack/*, int playerID*/)
     {
         if (waitingForStart)
         {
@@ -228,17 +248,19 @@ public class StackManagerScript : NetworkBehaviour
     {
 
         networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
+        gameHasStarted.Value = true;
         waitingForStart = true;
         /*
         lmanager = GameObject.FindGameObjectWithTag("LobbyManager").GetComponent<LobbyManager>();
         Debug.Log("players: " + lmanager.GetPlayers()); */
 
-        //networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
+        //set up client stuff
         foreach (ulong clientID in networkManager.ConnectedClientsIds)
         {
             Debug.Log("Client IDs: " + clientID);
             displayClientIDRpc(clientID, RpcTarget.Single(clientID, RpcTargetUse.Temp)); //should send command only to specific client
-            scores.Add(-10);
+            //scores.Add(-10);
+            scores[unchecked((int)clientID)] -= 10; //decrement by 10 each time a new round is started
             displayScoreRpc(scores[unchecked((int)clientID)], RpcTarget.Single(clientID, RpcTargetUse.Temp));
             //clientText.text = "ClientId = " + NetworkManager.ConnectedClientsIds[counter];
             //counter++;
@@ -266,7 +288,7 @@ public class StackManagerScript : NetworkBehaviour
             //player that owns current decks
 
 
-            Vector3 zeroPos = new Vector3(0, -45 * mult, 0); //position of spawnpoint 1
+            Vector3 zeroPos = new Vector3(0, -50 * mult, 0); //position of spawnpoint 1
 
             Quaternion rotation = spawnSystem.transform.GetChild(counter).transform.rotation;
             Quaternion zeroRot = new Quaternion(0, 0, 0, 0);
@@ -279,7 +301,7 @@ public class StackManagerScript : NetworkBehaviour
 
             Vector3 deckPos = zeroPos; //position where we should spawn the deck (below the other cards, slightly left so u can flip cards to the right)
             deckPos.x -= 10 * mult; //horizontal offset
-            deckPos.y -= 20 * mult; //vertical offset
+            deckPos.y -= 25 * mult; //vertical offset
             deckPos.z = -1; //closer to cam, so that collider triggers first
             Vector3 firstCardPos = zeroPos; //position where we should spawn the deck of 10 cards
             firstCardPos.x += 30 * mult;
@@ -297,7 +319,7 @@ public class StackManagerScript : NetworkBehaviour
             newDeck.GetComponent<StackScript>().canAcceptCards = false;
             //newDeck.GetComponent<StackScript>().setOwner(currentPlayer); //sets owner of stack
             newDeck.GetComponent<StackScript>().faceOtherWay();
-            setStackOwnerTextRpc(newDeckNetworkObject.NetworkObjectId, clientID);
+            //setStackOwnerTextRpc(newDeckNetworkObject.NetworkObjectId, clientID);
 
             //add deck to decks
             decks.Add(newDeckNetworkObject);
@@ -312,7 +334,7 @@ public class StackManagerScript : NetworkBehaviour
             newAcceptorPile.GetComponent<StackScript>().isAcceptorPile.Value = true;
             newAcceptorPile.GetComponent<StackScript>().canAcceptCards = false;
             newAcceptorPile.GetComponent<StackScript>().canTransfer.Value = true;
-            setStackOwnerTextRpc(newAcceptorPileNetworkObject.NetworkObjectId, clientID);
+            //setStackOwnerTextRpc(newAcceptorPileNetworkObject.NetworkObjectId, clientID);
 
             //add acceptor pile to acceptors
             acceptors.Add(newAcceptorPileNetworkObject);
@@ -331,7 +353,7 @@ public class StackManagerScript : NetworkBehaviour
             }
             stackOf10.GetComponent<StackScript>().canAcceptCards = false;
             stackOf10.GetComponent<StackScript>().isStackOf10.Value = true;
-            setStackOwnerTextRpc(stackOf10NetworkObject.NetworkObjectId, clientID);
+            //setStackOwnerTextRpc(stackOf10NetworkObject.NetworkObjectId, clientID);
 
             //add stack of 10 to stacksOf10
             stacksOf10.Add(stackOf10NetworkObject);
@@ -347,7 +369,7 @@ public class StackManagerScript : NetworkBehaviour
                 StackScript.CardValues topCard = newDeck.GetComponent<StackScript>().getTopCard();
                 newStack.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face);
                 newDeck.GetComponent<StackScript>().removeTopCard();
-                setStackOwnerTextRpc(newStackNetworkObject.NetworkObjectId, clientID);
+                //setStackOwnerTextRpc(newStackNetworkObject.NetworkObjectId, clientID);
             }
 
             //rotates back
@@ -360,11 +382,22 @@ public class StackManagerScript : NetworkBehaviour
         }
 
         //begin the countdown!!!
-        Debug.Log("BEGIN THE COUNTDOWN");
-        StartCoroutine(waitToStartGame());
+
         //2. calls function to shuffle the deck
         //3. doles out cards to correct stacks
         //4. repeat for each player
+    }
+
+    public void beginGame()
+    {
+        networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
+        if (!networkManager.IsHost)
+        {
+            Debug.Log("nuh uh!");
+            return;
+        }
+        Debug.Log("BEGIN THE COUNTDOWN");
+        StartCoroutine(waitToStartGame());
     }
 
     //set cameras i hope
@@ -380,37 +413,45 @@ public class StackManagerScript : NetworkBehaviour
     IEnumerator waitToStartGame()
     {
         Debug.Log("waiting :)");
-        updateWaitUIRpc("3", false);
+        updateWaitUIRpc("3", true, false);
         yield return new WaitForSeconds(1);
         //waitText.GetComponent<TMP_Text>().text = "2";
-        updateWaitUIRpc("2", false);
+        updateWaitUIRpc("2", true, false);
         yield return new WaitForSeconds(1);
         //waitText.GetComponent<TMP_Text>().text = "1";
-        updateWaitUIRpc("1", false);
+        updateWaitUIRpc("1", true, false);
         yield return new WaitForSeconds(1);
         //waitText.GetComponent<TMP_Text>().text = "START!";
-        updateWaitUIRpc("START!", false);
+        updateWaitUIRpc("START!", true, false);
         yield return new WaitForSeconds(1);
         //waitText.SetActive(false);
         //waitScreen.SetActive(false);
-        updateWaitUIRpc("bleh", true);
+        updateWaitUIRpc("bleh", false, false);
         waitingForStart = false;
     }
 
     [Rpc(SendTo.Everyone)]
-    void updateWaitUIRpc(string newText, bool end)
-    {   
-        waitText.SetActive(true);
-        waitScreen.SetActive(true);
+    void updateWaitUIRpc(string newText, bool text, bool screen)
+    {
+        //waitScreen.SetActive(true);
+        waitText.GetComponent<TMP_Text>().text = newText;
 
-        if (end)
+        if (!text)
         {
             waitText.SetActive(false);
+        }
+        else
+        {
+            waitText.SetActive(true);
+        }
+
+        if (!screen)
+        {
             waitScreen.SetActive(false);
         }
         else
         {
-            waitText.GetComponent<TMP_Text>().text = newText;
+            waitScreen.SetActive(true);
         }
     }
 
@@ -501,6 +542,12 @@ public class StackManagerScript : NetworkBehaviour
     [Rpc(SendTo.Server)]
     private void transferThreeRpc(ulong clientID)
     {
+        if (waitingForStart)
+        {
+            Debug.Log("nu uh!!!");
+            return;
+        }
+
         NetworkObject deckObj = decks[unchecked((int)clientID)]; //converts ulong to int i think
         NetworkObject acceptorObj = acceptors[unchecked((int)clientID)];
 
@@ -549,7 +596,7 @@ public class StackManagerScript : NetworkBehaviour
     IEnumerator blitzTimer(ulong clientID)
     {
         string newText = "Player " + clientID + " has called\nBLITZ!";
-        updateWaitUIRpc(newText, false);
+        updateWaitUIRpc(newText, true, true);
         yield return new WaitForSeconds(4);
         endGameRpc(clientID);
     }
@@ -558,6 +605,7 @@ public class StackManagerScript : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     private void endGameRpc(ulong clientID)
     {
+        gameHasStarted.Value = false;
         gameEndPanel.SetActive(true);
         mainCamera.SetActive(true);
         Transform summaryContainer = gameEndPanel.transform.Find("ScoreSummary");
@@ -569,4 +617,65 @@ public class StackManagerScript : NetworkBehaviour
             score.GetComponent<TMP_Text>().text = "Player " + connectedClientID + "'s score: " + scores[unchecked((int)connectedClientID)];
         }
     }
+
+    //for testing
+    [Rpc(SendTo.Everyone)]
+    public void activateEndScreenRpc()
+    {
+        gameHasStarted.Value = false;
+        gameEndPanel.SetActive(true);
+        mainCamera.SetActive(true);
+        Transform summaryContainer = gameEndPanel.transform.Find("ScoreSummary");
+        foreach (ulong connectedClientID in networkManager.ConnectedClientsIds)
+        {
+            GameObject playerCam = spawnSystem.transform.GetChild(unchecked((int)connectedClientID)).transform.GetChild(0).gameObject;
+            playerCam.SetActive(false);
+            GameObject score = Instantiate(scoreSummaryTextPrefab, summaryContainer);
+            score.GetComponent<TMP_Text>().text = "Player " + connectedClientID + "'s score: " + scores[unchecked((int)connectedClientID)];
+        }
+    }
+
+    public void newRound()
+    {
+        networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
+
+        if (!networkManager.IsHost)
+        {
+            Debug.Log("nuh uh!");
+            return;
+        }
+
+        //remove old scores
+        GameObject[] scoreSummaries = GameObject.FindGameObjectsWithTag("ScoreSummary");
+        foreach (GameObject summary in scoreSummaries)
+        {
+            Destroy(summary);
+        }
+
+        gameEndPanel.SetActive(false);
+
+        //destroy all the old stuff
+        GameObject[] allCards = GameObject.FindGameObjectsWithTag("Card");
+        GameObject[] allDecks = GameObject.FindGameObjectsWithTag("Stack");
+        GameObject table = GameObject.FindGameObjectWithTag("Table");
+        
+
+        foreach (GameObject card in allCards)
+        {
+            Destroy(card);
+        }
+
+        foreach (GameObject deck in allDecks)
+        {
+            Destroy(deck);
+        }
+
+        Destroy(table);
+
+        //start game anew
+        startGame();
+
+    }
+    
+    
 }
