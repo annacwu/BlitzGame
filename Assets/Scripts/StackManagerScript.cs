@@ -56,6 +56,8 @@ public class StackManagerScript : NetworkBehaviour
 
     private List<ulong> syncedClients = new();
 
+    [SerializeField] private GameEndUI gameEndUI;
+
     void Awake()
     {
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null)
@@ -491,7 +493,7 @@ public class StackManagerScript : NetworkBehaviour
     //adds 1 card of each color / value combo to make a full deck. since faces aren't implemented yet that's mostly just a placeholder. 
     private void createFullDeck(GameObject deck, string face)
     {
-        Color[] colors = { Color.blue, Color.green, Color.yellow, Color.red };
+        Color[] colors = {new(0.5f, 0.75f, 1.0f, 1.0f), new(0.5f, 1.0f, 0.5f, 1.0f), new(1.0f, 1.0f, 0.5f, 1.0f), new(1.0f, 0.5f, 0.5f, 1.0f)};
         StackScript currentDeckScript = deck.GetComponent<StackScript>();
 
         for (int i = 0; i < 10; i++)
@@ -598,42 +600,127 @@ public class StackManagerScript : NetworkBehaviour
         string newText = "Player " + clientID + " has called\nBLITZ!";
         updateWaitUIRpc(newText, true, true);
         yield return new WaitForSeconds(4);
-        endGameRpc(clientID);
+        activateEndScreen(false);
     }
 
     //ends the game!!
-    [Rpc(SendTo.Everyone)]
-    private void endGameRpc(ulong clientID)
+    // [Rpc(SendTo.Everyone)]
+    // private void endGameRpc(ulong clientID)
+    // {
+    //     networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
+    //     gameHasStarted.Value = false;
+    //     gameEndPanel.SetActive(true);
+    //     mainCamera.SetActive(true);
+    //     //Transform summaryContainer = gameEndPanel.transform.Find("ScoreSummary");
+    //     if (networkManager.IsHost)
+    //     {
+    //         foreach (ulong connectedClientID in networkManager.ConnectedClientsIds)
+    //         {
+    //             updateEndScreenRpc(false, connectedClientID);
+    //             /*
+    //             GameObject playerCam = spawnSystem.transform.GetChild(unchecked((int)connectedClientID)).transform.GetChild(0).gameObject;
+    //             playerCam.SetActive(false);
+    //             GameObject score = Instantiate(scoreSummaryTextPrefab, summaryContainer);
+    //             score.GetComponent<TMP_Text>().text = "Player " + connectedClientID + "'s score: " + scores[unchecked((int)connectedClientID)];*/
+    //         }
+    //     }
+
+    // }
+
+    public void activateEndScreen(bool resetScores)
     {
+        activateEndScreenServerRpc(resetScores);
+    }
+
+    [Rpc(SendTo.Server)]
+    private void activateEndScreenServerRpc(bool resetScores)
+    {
+        networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
         gameHasStarted.Value = false;
-        gameEndPanel.SetActive(true);
-        mainCamera.SetActive(true);
-        Transform summaryContainer = gameEndPanel.transform.Find("ScoreSummary");
-        foreach (ulong connectedClientID in networkManager.ConnectedClientsIds)
+
+        showEndScreenRpc();
+
+        if (networkManager.IsHost)
         {
-            GameObject playerCam = spawnSystem.transform.GetChild(unchecked((int)connectedClientID)).transform.GetChild(0).gameObject;
-            playerCam.SetActive(false);
-            GameObject score = Instantiate(scoreSummaryTextPrefab, summaryContainer);
-            score.GetComponent<TMP_Text>().text = "Player " + connectedClientID + "'s score: " + scores[unchecked((int)connectedClientID)];
+            foreach (ulong connectedClientID in networkManager.ConnectedClientsIds)
+            {
+                updateEndScreenRpc(resetScores, connectedClientID);
+                addScoreSummaryRpc(connectedClientID, scores[unchecked((int)connectedClientID)]);
+            }
         }
     }
 
-    //for testing
     [Rpc(SendTo.Everyone)]
-    public void activateEndScreenRpc()
+    private void showEndScreenRpc()
     {
-        gameHasStarted.Value = false;
-        gameEndPanel.SetActive(true);
+        gameEndUI.Show();
         mainCamera.SetActive(true);
-        Transform summaryContainer = gameEndPanel.transform.Find("ScoreSummary");
-        foreach (ulong connectedClientID in networkManager.ConnectedClientsIds)
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void updateEndScreenRpc(bool resetScores, ulong clientID)
+    {
+        GameObject playerCam = spawnSystem.transform.GetChild(unchecked((int)clientID)).transform.GetChild(0).gameObject;
+        playerCam.SetActive(false);
+
+        networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
+
+        if (resetScores && networkManager.IsHost)
         {
-            GameObject playerCam = spawnSystem.transform.GetChild(unchecked((int)connectedClientID)).transform.GetChild(0).gameObject;
-            playerCam.SetActive(false);
-            GameObject score = Instantiate(scoreSummaryTextPrefab, summaryContainer);
-            score.GetComponent<TMP_Text>().text = "Player " + connectedClientID + "'s score: " + scores[unchecked((int)connectedClientID)];
+            scores[unchecked((int)clientID)] = 0;
         }
     }
+
+    [Rpc(SendTo.Everyone)]
+    private void addScoreSummaryRpc(ulong clientID, int score)
+    {
+        gameEndUI.AddScoreSummary(clientID, score);
+    }
+
+    //for testing
+    // [Rpc(SendTo.Everyone)]
+    // private void activateEndScreenRpc()
+    // {
+    //     networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
+    //     gameHasStarted.Value = false;
+    //     gameEndPanel.SetActive(true);
+    //     mainCamera.SetActive(true);
+    //     //Transform summaryContainer = gameEndPanel.transform.Find("ScoreSummary");
+
+    //     //only if u are the host
+    //     if (networkManager.IsHost)
+    //     {
+    //         foreach (ulong connectedClientID in networkManager.ConnectedClientsIds) //as a client u cannot access list of connected clients!!! dumbass
+    //         {
+    //             updateEndScreenRpc(true, connectedClientID);
+    //             /*GameObject playerCam = spawnSystem.transform.GetChild(unchecked((int)connectedClientID)).transform.GetChild(0).gameObject;
+    //             playerCam.SetActive(false);
+    //             scores[unchecked((int)connectedClientID)] = 0; //decrement by 10 each time a new round is started
+    //             GameObject score = Instantiate(scoreSummaryTextPrefab, summaryContainer);
+    //             score.GetComponent<TMP_Text>().text = "Player " + connectedClientID + "'s score: " + scores[unchecked((int)connectedClientID)];*/
+    //         }
+    //     }
+
+    // }
+
+    //does the displaying score stuff that cannot be done on the client
+    // [Rpc(SendTo.Everyone)]
+    // private void updateEndScreenRpc(bool resetScores, ulong clientID)
+    // {
+    //     Transform summaryContainer = gameEndPanel.transform.Find("ScoreSummary");
+    //     GameObject playerCam = spawnSystem.transform.GetChild(unchecked((int)clientID)).transform.GetChild(0).gameObject;
+    //     playerCam.SetActive(false);
+
+    //     if (resetScores)
+    //     {
+    //         scores[unchecked((int)clientID)] = 0; //decrement by 10 each time a new round is started
+    //     }
+
+    //     GameObject score = Instantiate(scoreSummaryTextPrefab, summaryContainer);
+    //     score.GetComponent<TMP_Text>().text = "Player " + clientID + "'s score: " + scores[unchecked((int)clientID)];
+    // }
+
+
 
     public void newRound()
     {
@@ -646,19 +733,15 @@ public class StackManagerScript : NetworkBehaviour
         }
 
         //remove old scores
-        GameObject[] scoreSummaries = GameObject.FindGameObjectsWithTag("ScoreSummary");
-        foreach (GameObject summary in scoreSummaries)
-        {
-            Destroy(summary);
-        }
+        ClearScoreSummariesRpc();
 
-        gameEndPanel.SetActive(false);
+        HideEndScreenRpc();
 
         //destroy all the old stuff
         GameObject[] allCards = GameObject.FindGameObjectsWithTag("Card");
         GameObject[] allDecks = GameObject.FindGameObjectsWithTag("Stack");
         GameObject table = GameObject.FindGameObjectWithTag("Table");
-        
+
 
         foreach (GameObject card in allCards)
         {
@@ -672,9 +755,29 @@ public class StackManagerScript : NetworkBehaviour
 
         Destroy(table);
 
+        acceptors = new List<NetworkObject>(); //list of acceptor piles, index = clientID of client who owns the stack
+        decks = new List<NetworkObject>(); //list of decks, index = clientID of client who owns the stack
+        stacksOf10 = new List<NetworkObject>(); //list of stacksOf10, index = clientID of client who owns the stack
+
         //start game anew
         startGame();
 
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void HideEndScreenRpc()
+    {
+        gameEndUI.Hide();
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void ClearScoreSummariesRpc()
+    {
+        GameObject[] scoreSummaries = GameObject.FindGameObjectsWithTag("ScoreSummary");
+        foreach (GameObject summary in scoreSummaries)
+        {
+            Destroy(summary);
+        }
     }
     
     

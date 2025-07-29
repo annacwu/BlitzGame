@@ -22,16 +22,16 @@ public class NetworkManagerUI : MonoBehaviour
             playerSpawnSystem.RegisterSpawnSystemEvents();
         });
 
-        hostButton.onClick.AddListener(() => {
-            NetworkManager.Singleton.StartHost();
-            Debug.Log("Host started manually"); // it was never starting without the following line
-            // playerSpawnSystem.OnServerStarted();
-            playerSpawnSystem.RegisterSpawnSystemEvents();
-        });
+        // hostButton.onClick.AddListener(() => {
+        //     NetworkManager.Singleton.StartHost();
+        //     Debug.Log("Host started manually"); // it was never starting without the following line
+        //     // playerSpawnSystem.OnServerStarted();
+        //     playerSpawnSystem.RegisterSpawnSystemEvents();
+        // });
 
-        clientButton.onClick.AddListener(() => {
-            NetworkManager.Singleton.StartClient(); // something i don't understand is why client stuff works SEEMS LIKE IT DOESNT ACTUALLY
-        });
+        // clientButton.onClick.AddListener(() => {
+        //     NetworkManager.Singleton.StartClient(); // something i don't understand is why client stuff works SEEMS LIKE IT DOESNT ACTUALLY
+        // });
     }
 
     /*
