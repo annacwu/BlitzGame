@@ -28,7 +28,7 @@ public class StackScript : NetworkBehaviour
     public GameObject cardPrefab;
     [SerializeField] public bool isDeck = false; //decks start with a full deck of cards, which is shuffled automatically. Decks are spawned in when the game starts, & handle the whole doling out cards thing.
     public NetworkVariable<bool> isAcceptorPile = new(false); //only true for acceptor pile
-    public bool canAcceptCards = true; //only false for acceptor pile, deck, and stack of 10
+    public NetworkVariable<bool> canAcceptCards = new(true); //only false for acceptor pile, deck, and stack of 10
 
     public NetworkVariable<bool> canTransfer = new(true); //only false for decks and newly created center decks
 
@@ -165,6 +165,7 @@ public class StackScript : NetworkBehaviour
     //I THINK NETWORK READY
     public void addCard(int value, Color color, string face)
     {
+        //NetworkLog.LogInfoServer("Entered into addCard");
         //sets sorting order networkvariable to ensure cards are displayed right
         spawnCardRpc(value, color, face);
         //gameObject.GetComponent<SpriteRenderer>().color = Color.clear; //makes the sprite transparent
@@ -174,17 +175,32 @@ public class StackScript : NetworkBehaviour
         }
 
         incrementNumCardsRpc(1);
+        //NetworkLog.LogInfoServer("Added card: new numCards = " + numCards.Value);
         //numCards.Value++;
         isEmpty.Value = false;
 
-        if (numCards.Value == 10 && isOnTable.Value == true)
+        //there is a delay when updating numCards I think
+        if ((numCards.Value == 10 || numCards.Value == 9) && isOnTable.Value == true)
         {
             //flips the deck over when the 10 is placed (bc no more cards can be placed)
             //but waits a second so it's not instant
             //ideally this would be an animation eventually
-            Debug.Log("We should flip the stack in 1 second");
+            //NetworkLog.LogInfoServer("We should flip the stack in 1 second");
+            checkIfFlipRpc();   
+        }
+    }
+
+    //sometimes stacks were not flipping, i think bc there is a delay between updating numcards and the new value being distributed to the client
+    //so now we check on the server, which should always be updated.
+    //i recognize this is inefficient but it should work
+    [Rpc(SendTo.Server)]
+    private void checkIfFlipRpc()
+    {
+        if (numCards.Value == 10)
+        {
             StartCoroutine(waitBeforeFlip(1));
         }
+
     }
 
     //waits x amount of time, then flips deck over
@@ -199,6 +215,7 @@ public class StackScript : NetworkBehaviour
     //IN THEORY NETWORK READY
     public void removeTopCard()
     {
+        //NetworkLog.LogInfoServer("Entered into removeTopCard");
         //CardValues topCard = cards.First.Value;
         //Debug.Log(cards.First.Value);
         if (cards.First != null)
@@ -214,6 +231,7 @@ public class StackScript : NetworkBehaviour
 
             removeCardRpc(this.NetworkObjectId);
             incrementNumCardsRpc(-1);
+            //NetworkLog.LogInfoServer("Removed card: new numCards = " + numCards.Value);
             //numCards.Value--;
         }
 

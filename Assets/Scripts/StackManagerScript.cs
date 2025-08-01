@@ -23,7 +23,7 @@ using UnityEngine.UIElements;
 public class StackManagerScript : NetworkBehaviour
 {
     private NetworkVariable<bool> gameHasStarted = new(false);
-    private bool waitingForStart = false;
+    private NetworkVariable<bool> waitingForStart = new(false);
     private bool stackSelected = false;
     private GameObject currentStack;
 
@@ -113,7 +113,7 @@ public class StackManagerScript : NetworkBehaviour
     //TO ADD: pressing escape (or other key but i think escape is good) should DESELECT whatever stack u had selected
     public void selectStack(GameObject clickedStack/*, int playerID*/)
     {
-        if (waitingForStart)
+        if (waitingForStart.Value)
         {
             Debug.Log("nu uh!!!");
             return;
@@ -151,7 +151,7 @@ public class StackManagerScript : NetworkBehaviour
         }
 
 
-        if (stackSelected && !postScript.canTransfer.Value && !postScript.canAcceptCards)
+        if (stackSelected && !postScript.canTransfer.Value && !postScript.canAcceptCards.Value)
         {
             //Debug.Log("No transfer possible: new stack cannot accept or give cards!");
             deselectStack();
@@ -161,7 +161,7 @@ public class StackManagerScript : NetworkBehaviour
             //Debug.Log("No transfer possible: not owner of new stack!");
             deselectStack();
         }
-        else if (stackSelected && !postScript.canAcceptCards)
+        else if (stackSelected && !postScript.canAcceptCards.Value)
         {
             //Debug.Log("No transfer possible: new stack cannot accept cards!");
             currentStack.transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.white;
@@ -251,7 +251,7 @@ public class StackManagerScript : NetworkBehaviour
 
         networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
         gameHasStarted.Value = true;
-        waitingForStart = true;
+        waitingForStart.Value = true;
         /*
         lmanager = GameObject.FindGameObjectWithTag("LobbyManager").GetComponent<LobbyManager>();
         Debug.Log("players: " + lmanager.GetPlayers()); */
@@ -270,7 +270,7 @@ public class StackManagerScript : NetworkBehaviour
         }
 
         //in theory cameras should be set so disable the main cam
-        mainCamera.SetActive(false);
+        //mainCamera.SetActive(false);
 
         //  a. a deck consists of 40 cards, 4 of each number (1-10) in each of the 4 colors (red, blue, yellow (?), green)
 
@@ -295,6 +295,7 @@ public class StackManagerScript : NetworkBehaviour
             Quaternion rotation = spawnSystem.transform.GetChild(counter).transform.rotation;
             Quaternion zeroRot = new Quaternion(0, 0, 0, 0);
 
+
             //rotates table to try and get it to work :3
             //Debug.Log(spawnSystem.transform.GetChild(i).name + "'s starting rotation: " + rotation.z);
             table.transform.rotation = rotation;
@@ -309,7 +310,10 @@ public class StackManagerScript : NetworkBehaviour
             firstCardPos.x += 30 * mult;
 
             //spawns decks
-            GameObject newDeck = Instantiate(stackPrefab, deckPos, zeroRot, table.transform); //this is a template position - ideally, we'd use the position + rotation of the player
+            GameObject newDeck = Instantiate(stackPrefab, deckPos, table.transform.rotation, table.transform); //this is a template position - ideally, we'd use the position + rotation of the player
+            newDeck.transform.localRotation = rotation;
+            newDeck.transform.Rotate(0.0f, 0.0f, -90.0f);
+            //newDeck.transform.Rotat;
             //createFullDeck(newDeck, "template face"); //also template for now :)
             var newDeckNetworkObject = newDeck.GetComponent<NetworkObject>();
             newDeckNetworkObject.SpawnWithOwnership(clientID, true);
@@ -318,7 +322,7 @@ public class StackManagerScript : NetworkBehaviour
             newDeck.GetComponent<StackScript>().shuffle();
             newDeck.GetComponent<StackScript>().isDeck = true;
             newDeck.GetComponent<StackScript>().canTransfer.Value = false;
-            newDeck.GetComponent<StackScript>().canAcceptCards = false;
+            newDeck.GetComponent<StackScript>().canAcceptCards.Value = false;
             //newDeck.GetComponent<StackScript>().setOwner(currentPlayer); //sets owner of stack
             newDeck.GetComponent<StackScript>().faceOtherWay();
             //setStackOwnerTextRpc(newDeckNetworkObject.NetworkObjectId, clientID);
@@ -329,12 +333,15 @@ public class StackManagerScript : NetworkBehaviour
 
             //instantiates acceptor pile
             deckPos.x += 20 * mult;
-            GameObject newAcceptorPile = Instantiate(stackPrefab, deckPos, zeroRot, table.transform);
+            GameObject newAcceptorPile = Instantiate(stackPrefab, deckPos, table.transform.rotation, table.transform);
+            newAcceptorPile.transform.localRotation = rotation;
+            newAcceptorPile.transform.Rotate(0.0f, 0.0f, -90.0f);
+
             var newAcceptorPileNetworkObject = newAcceptorPile.GetComponent<NetworkObject>();
             newAcceptorPileNetworkObject.SpawnWithOwnership(clientID, true);
             newAcceptorPileNetworkObject.transform.parent = table.transform; //fixes the parent issue >?>?>?
             newAcceptorPile.GetComponent<StackScript>().isAcceptorPile.Value = true;
-            newAcceptorPile.GetComponent<StackScript>().canAcceptCards = false;
+            newAcceptorPile.GetComponent<StackScript>().canAcceptCards.Value = false;
             newAcceptorPile.GetComponent<StackScript>().canTransfer.Value = true;
             //setStackOwnerTextRpc(newAcceptorPileNetworkObject.NetworkObjectId, clientID);
 
@@ -343,7 +350,10 @@ public class StackManagerScript : NetworkBehaviour
 
             //sets up the stack of 10
             //zeroPos.x -= 20;
-            GameObject stackOf10 = Instantiate(stackPrefab, firstCardPos, zeroRot, table.transform);
+            GameObject stackOf10 = Instantiate(stackPrefab, firstCardPos, table.transform.rotation, table.transform);
+            stackOf10.transform.localRotation = rotation;
+            stackOf10.transform.Rotate(0.0f, 0.0f, -90.0f);
+
             var stackOf10NetworkObject = stackOf10.GetComponent<NetworkObject>();
             stackOf10NetworkObject.SpawnWithOwnership(clientID, true);
             stackOf10NetworkObject.transform.parent = table.transform; //fixes the parent issue >?>?>?
@@ -353,7 +363,7 @@ public class StackManagerScript : NetworkBehaviour
                 stackOf10.GetComponent<StackScript>().addCard(topCard.value, topCard.color, topCard.face);
                 newDeck.GetComponent<StackScript>().removeTopCard();
             }
-            stackOf10.GetComponent<StackScript>().canAcceptCards = false;
+            stackOf10.GetComponent<StackScript>().canAcceptCards.Value = false;
             stackOf10.GetComponent<StackScript>().isStackOf10.Value = true;
             //setStackOwnerTextRpc(stackOf10NetworkObject.NetworkObjectId, clientID);
 
@@ -364,7 +374,10 @@ public class StackManagerScript : NetworkBehaviour
             for (int j = 0; j < 3; j++)
             {
                 firstCardPos.x -= 20 * mult;
-                GameObject newStack = Instantiate(stackPrefab, firstCardPos, zeroRot, table.transform);
+                GameObject newStack = Instantiate(stackPrefab, firstCardPos, table.transform.rotation, table.transform);
+                newStack.transform.localRotation = rotation;
+                newStack.transform.Rotate(0.0f, 0.0f, -90.0f);
+
                 var newStackNetworkObject = newStack.GetComponent<NetworkObject>();
                 newStackNetworkObject.SpawnWithOwnership(clientID, true);
                 newStackNetworkObject.transform.parent = table.transform; //fixes the parent issue >?>?>?
@@ -409,6 +422,7 @@ public class StackManagerScript : NetworkBehaviour
         //Debug.Log("Setting player " + clientID + "'s camera");
         GameObject playerCam = spawnSystem.transform.GetChild(unchecked((int)clientID)).transform.GetChild(0).gameObject;
         playerCam.SetActive(true);
+        mainCamera.SetActive(false);
     }
 
     //does the little countdown
@@ -429,7 +443,7 @@ public class StackManagerScript : NetworkBehaviour
         //waitText.SetActive(false);
         //waitScreen.SetActive(false);
         updateWaitUIRpc("bleh", false, false);
-        waitingForStart = false;
+        waitingForStart.Value = false;
     }
 
     [Rpc(SendTo.Everyone)]
@@ -544,7 +558,7 @@ public class StackManagerScript : NetworkBehaviour
     [Rpc(SendTo.Server)]
     private void transferThreeRpc(ulong clientID)
     {
-        if (waitingForStart)
+        if (waitingForStart.Value)
         {
             Debug.Log("nu uh!!!");
             return;
@@ -582,17 +596,28 @@ public class StackManagerScript : NetworkBehaviour
     public void blitz()
     {
         networkManager = GameObject.FindGameObjectWithTag("NetworkManager").GetComponent<NetworkManager>();
-        ulong currentClientID = networkManager.LocalClientId;
-        if (stacksOf10[unchecked((int)currentClientID)].GetComponent<StackScript>().getNumCards() == 0)
-        {
-            waitingForStart = true;
-            StartCoroutine(blitzTimer(currentClientID));
-        }
+        ulong clientID = networkManager.LocalClientId;
+        blitzRpc(clientID);
+        // if (stacksOf10[unchecked((int)currentClientID)].GetComponent<StackScript>().getNumCards() == 0)
+        // {
+        //     waitingForStart.Value = true;
+        //     StartCoroutine(blitzTimer(currentClientID));
+        // }
         /*
         if (stack of ten is empty) {
             end the game, display scores (in new screen or overlay of some kind)
         }
         */
+    }
+
+    [Rpc(SendTo.Server)]
+    public void blitzRpc(ulong clientID)
+    {
+        if (stacksOf10[unchecked((int)clientID)].GetComponent<StackScript>().getNumCards() == 0)
+        {
+            waitingForStart.Value = true;
+            StartCoroutine(blitzTimer(clientID));
+        }
     }
 
     IEnumerator blitzTimer(ulong clientID)

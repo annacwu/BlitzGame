@@ -2728,13 +2728,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1464863283}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
   m_LocalPosition: {x: 450, y: 0, z: -100}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1226508251}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
 --- !u!114 &1464863285
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2786,7 +2786,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1464863283}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &1464863287
 Camera:
   m_ObjectHideFlags: 0
@@ -3089,7 +3089,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1530949593}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &1530949597
 Camera:
   m_ObjectHideFlags: 0
@@ -3929,7 +3929,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1743990906}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &1743990910
 Camera:
   m_ObjectHideFlags: 0
@@ -4276,13 +4276,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2035564748}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
   m_LocalPosition: {x: 450, y: 0, z: -100}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 948742125}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
 --- !u!114 &2035564750
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4334,7 +4334,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2035564748}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &2035564752
 Camera:
   m_ObjectHideFlags: 0
@@ -4345,7 +4345,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.11698109, g: 0.11698109, b: 0.11698109, a: 0}
+  m_BackGroundColor: {r: 0.3773585, g: 0.33746886, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
